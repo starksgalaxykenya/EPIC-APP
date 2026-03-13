@@ -29,7 +29,7 @@ const firebaseConfig = {
 };
 
 // ─── ADMIN EMAIL (Epic Cinematic Films admin) ─────────────────────
-const ADMIN_EMAIL = "admin@epiccinematicfilms.com";
+const ADMIN_EMAIL = "admin@epic.com";
 
 // ─── INIT FIREBASE ────────────────────────────────────────────────
 let app, auth, db;
