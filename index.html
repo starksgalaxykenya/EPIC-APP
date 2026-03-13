@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Epic Cinematic Films — Client Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════ AUTH SCREEN ══ -->
+<div id="auth-screen" class="screen active">
+  <div class="auth-bg">
+    <div class="auth-grain"></div>
+    <div class="auth-lines"></div>
+  </div>
+  <div class="auth-container">
+    <div class="auth-brand">
+      <div class="auth-logo-mark">ECF</div>
+      <h1 class="auth-title">EPIC CINEMATIC<br/><span>FILMS</span></h1>
+      <p class="auth-tagline">Cinematic Quality. Commercial Results.</p>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Sign In</button>
+        <button class="auth-tab" data-tab="register">Register</button>
+      </div>
+      <div id="auth-login" class="auth-form active">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="login-email" placeholder="your@email.com"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="••••••••"/>
+        </div>
+        <button class="btn-primary" id="btn-login">Sign In</button>
+        <button class="btn-ghost" id="btn-forgot">Forgot password?</button>
+        <div id="login-error" class="form-error hidden"></div>
+      </div>
+      <div id="auth-register" class="auth-form">
+        <div class="form-group">
+          <label>Dealership / Company Name</label>
+          <input type="text" id="reg-company" placeholder="ABC Motors Ltd"/>
+        </div>
+        <div class="form-group">
+          <label>Contact Person</label>
+          <input type="text" id="reg-name" placeholder="Full name"/>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="reg-email" placeholder="your@email.com"/>
+        </div>
+        <div class="form-group">
+          <label>Phone / WhatsApp</label>
+          <input type="tel" id="reg-phone" placeholder="+254 7XX XXX XXX"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="reg-password" placeholder="Min. 8 characters"/>
+        </div>
+        <button class="btn-primary" id="btn-register">Create Account</button>
+        <div id="reg-error" class="form-error hidden"></div>
+      </div>
+    </div>
+    <p class="auth-note">Epic Cinematic Films Client Portal — Nairobi, Kenya</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ ADMIN PORTAL ══ -->
+<div id="admin-screen" class="screen">
+  <div class="portal-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="admin-sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo">ECF</div>
+        <div class="sidebar-brand-text">
+          <span class="brand-name">EPIC CINEMATIC</span>
+          <span class="brand-role admin-role">ADMIN</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-view="admin-dashboard" href="#">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-item" data-view="admin-clients" href="#">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Clients
+        </a>
+        <a class="nav-item" data-view="admin-briefs" href="#">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Brand Briefs
+        </a>
+        <a class="nav-item" data-view="admin-shoots" href="#">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Shoots
+        </a>
+        <a class="nav-item" data-view="admin-feedback" href="#">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Feedback
+        </a>
+        <a class="nav-item" data-view="admin-gallery" href="#">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Deliverables
+        </a>
+        <a class="nav-item" data-view="admin-invoices" href="#">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Invoices
+        </a>
+      </nav>
+      <button class="sidebar-signout" id="admin-signout">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </aside>
+
+    <!-- Main -->
+    <main class="portal-main">
+      <div class="portal-topbar">
+        <div class="topbar-left">
+          <button class="hamburger" id="admin-hamburger">
+            <span></span><span></span><span></span>
+          </button>
+          <h2 class="view-title" id="admin-view-title">Dashboard</h2>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-notif" id="admin-notif-btn">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-badge" id="admin-notif-count">0</span>
+          </div>
+          <div class="topbar-user">
+            <div class="user-avatar admin-avatar">AD</div>
+            <span id="admin-user-name">Admin</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN VIEWS -->
+      <div class="view-container">
+
+        <!-- Dashboard -->
+        <div class="view active" id="view-admin-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+              <div class="stat-body"><span class="stat-num" id="stat-clients">0</span><span class="stat-label">Active Clients</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon accent"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+              <div class="stat-body"><span class="stat-num" id="stat-shoots">0</span><span class="stat-label">Scheduled Shoots</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon gold"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div class="stat-body"><span class="stat-num" id="stat-briefs">0</span><span class="stat-label">Brand Briefs</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+              <div class="stat-body"><span class="stat-num" id="stat-revenue">KES 0</span><span class="stat-label">This Month</span></div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="dash-panel">
+              <div class="panel-header"><h3>Upcoming Shoots</h3><a href="#" class="panel-link" data-view="admin-shoots">View All</a></div>
+              <div id="admin-upcoming-shoots" class="shoot-list">
+                <div class="empty-state">No shoots scheduled yet.</div>
+              </div>
+            </div>
+            <div class="dash-panel">
+              <div class="panel-header"><h3>Recent Briefs</h3><a href="#" class="panel-link" data-view="admin-briefs">View All</a></div>
+              <div id="admin-recent-briefs" class="brief-list">
+                <div class="empty-state">No briefs submitted yet.</div>
+              </div>
+            </div>
+            <div class="dash-panel full-width">
+              <div class="panel-header"><h3>Pending Actions</h3></div>
+              <div id="admin-pending-actions" class="action-list">
+                <div class="empty-state">All clear — no pending actions.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Clients -->
+        <div class="view" id="view-admin-clients">
+          <div class="view-toolbar">
+            <input type="text" class="search-input" id="client-search" placeholder="Search clients..."/>
+            <button class="btn-primary btn-sm" id="btn-invite-client">+ Invite Client</button>
+          </div>
+          <div id="admin-clients-list" class="cards-grid"></div>
+        </div>
+
+        <!-- Brand Briefs -->
+        <div class="view" id="view-admin-briefs">
+          <div class="view-toolbar">
+            <input type="text" class="search-input" id="brief-search" placeholder="Search briefs..."/>
+            <div class="filter-tabs">
+              <button class="filter-tab active" data-filter="all">All</button>
+              <button class="filter-tab" data-filter="pending">Pending Review</button>
+              <button class="filter-tab" data-filter="approved">Approved</button>
+            </div>
+          </div>
+          <div id="admin-briefs-list" class="cards-grid"></div>
+        </div>
+
+        <!-- Shoots Admin -->
+        <div class="view" id="view-admin-shoots">
+          <div class="view-toolbar">
+            <div class="filter-tabs">
+              <button class="filter-tab active" data-filter="all">All</button>
+              <button class="filter-tab" data-filter="upcoming">Upcoming</button>
+              <button class="filter-tab" data-filter="completed">Completed</button>
+            </div>
+            <button class="btn-primary btn-sm" id="btn-create-shoot">+ New Shoot</button>
+          </div>
+          <div id="admin-shoots-list" class="cards-grid"></div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="view" id="view-admin-feedback">
+          <div class="view-toolbar">
+            <button class="btn-primary btn-sm" id="btn-send-feedback">+ Send Feedback</button>
+          </div>
+          <div id="admin-feedback-list" class="cards-grid"></div>
+        </div>
+
+        <!-- Deliverables -->
+        <div class="view" id="view-admin-gallery">
+          <div class="view-toolbar">
+            <button class="btn-primary btn-sm" id="btn-add-deliverable">+ Add Deliverable</button>
+          </div>
+          <div id="admin-gallery-list" class="cards-grid"></div>
+        </div>
+
+        <!-- Invoices -->
+        <div class="view" id="view-admin-invoices">
+          <div class="view-toolbar">
+            <button class="btn-primary btn-sm" id="btn-create-invoice">+ Create Invoice</button>
+          </div>
+          <div id="admin-invoices-list" class="cards-grid"></div>
+        </div>
+
+      </div><!-- /view-container -->
+    </main>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ CLIENT PORTAL ══ -->
+<div id="client-screen" class="screen">
+  <div class="portal-layout">
+    <aside class="sidebar" id="client-sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo">ECF</div>
+        <div class="sidebar-brand-text">
+          <span class="brand-name" id="client-brand-name">MY BRAND</span>
+          <span class="brand-role client-role">CLIENT</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-view="client-dashboard" href="#">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-item" data-view="client-brief" href="#">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Brand Brief
+        </a>
+        <a class="nav-item" data-view="client-shoots" href="#">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Schedule Shoot
+        </a>
+        <a class="nav-item" data-view="client-deliverables" href="#">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Deliverables
+        </a>
+        <a class="nav-item" data-view="client-feedback" href="#">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Feedback
+          <span class="nav-badge" id="client-feedback-badge">0</span>
+        </a>
+        <a class="nav-item" data-view="client-invoices" href="#">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Invoices
+        </a>
+        <a class="nav-item" data-view="client-profile" href="#">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          My Profile
+        </a>
+      </nav>
+      <button class="sidebar-signout" id="client-signout">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </aside>
+
+    <main class="portal-main">
+      <div class="portal-topbar">
+        <div class="topbar-left">
+          <button class="hamburger" id="client-hamburger">
+            <span></span><span></span><span></span>
+          </button>
+          <h2 class="view-title" id="client-view-title">Dashboard</h2>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-notif" id="client-notif-btn">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-badge" id="client-notif-count">0</span>
+          </div>
+          <div class="topbar-user">
+            <div class="user-avatar client-avatar" id="client-avatar-initials">CL</div>
+            <span id="client-user-name">Client</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="view-container">
+
+        <!-- Client Dashboard -->
+        <div class="view active" id="view-client-dashboard">
+          <div class="welcome-banner">
+            <div class="welcome-text">
+              <h2 id="client-welcome-name">Welcome back</h2>
+              <p>Here's your content overview with Epic Cinematic Films.</p>
+            </div>
+            <div class="welcome-cta">
+              <button class="btn-primary" data-view="client-shoots">Schedule a Shoot</button>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+              <div class="stat-body"><span class="stat-num" id="cstat-shoots">0</span><span class="stat-label">Total Shoots</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon accent"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+              <div class="stat-body"><span class="stat-num" id="cstat-deliverables">0</span><span class="stat-label">Deliverables</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon gold"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+              <div class="stat-body"><span class="stat-num" id="cstat-feedback">0</span><span class="stat-label">New Feedback</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+              <div class="stat-body"><span class="stat-num" id="cstat-status">Active</span><span class="stat-label">Account Status</span></div>
+            </div>
+          </div>
+          <div class="dashboard-grid">
+            <div class="dash-panel">
+              <div class="panel-header"><h3>Next Shoot</h3></div>
+              <div id="client-next-shoot" class="next-shoot-card"><div class="empty-state">No upcoming shoots. <a href="#" data-view="client-shoots">Schedule one →</a></div></div>
+            </div>
+            <div class="dash-panel">
+              <div class="panel-header"><h3>Latest Feedback from ECF</h3></div>
+              <div id="client-latest-feedback" class="feedback-preview"><div class="empty-state">No feedback yet.</div></div>
+            </div>
+            <div class="dash-panel full-width">
+              <div class="panel-header"><h3>Recent Deliverables</h3><a href="#" class="panel-link" data-view="client-deliverables">View All</a></div>
+              <div id="client-recent-deliverables" class="deliverables-row"><div class="empty-state">No deliverables yet.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Brand Brief -->
+        <div class="view" id="view-client-brief">
+          <div class="brief-intro">
+            <h3>Your Brand Brief</h3>
+            <p>This information helps us keep every photo and video consistent with your brand. Fill in as much detail as possible — you can update it anytime.</p>
+          </div>
+          <div class="brief-status-bar" id="brief-completion-bar">
+            <div class="brief-progress-label">Brief Completion: <span id="brief-pct">0%</span></div>
+            <div class="brief-progress-track"><div class="brief-progress-fill" id="brief-fill" style="width:0%"></div></div>
+          </div>
+          <form id="brand-brief-form" class="brief-form">
+            <div class="brief-section">
+              <div class="brief-section-header"><span class="section-num">01</span><h4>Dealership Information</h4></div>
+              <div class="form-grid">
+                <div class="form-group"><label>Dealership Name *</label><input type="text" name="dealershipName" required/></div>
+                <div class="form-group"><label>Trading Name</label><input type="text" name="tradingName"/></div>
+                <div class="form-group"><label>Location / Address *</label><input type="text" name="location" required/></div>
+                <div class="form-group"><label>Phone / WhatsApp *</label><input type="tel" name="phone" required/></div>
+                <div class="form-group"><label>Website URL</label><input type="url" name="website" placeholder="https://"/></div>
+                <div class="form-group"><label>Instagram Handle</label><input type="text" name="instagram" placeholder="@yourhandle"/></div>
+                <div class="form-group"><label>Facebook Page</label><input type="text" name="facebook"/></div>
+                <div class="form-group"><label>TikTok Handle</label><input type="text" name="tiktok" placeholder="@yourhandle"/></div>
+              </div>
+            </div>
+
+            <div class="brief-section">
+              <div class="brief-section-header"><span class="section-num">02</span><h4>Brand Identity</h4></div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Primary Brand Colour</label>
+                  <div class="color-input-wrap">
+                    <input type="color" name="primaryColor" value="#C9A84C" class="color-picker"/>
+                    <input type="text" name="primaryColorHex" placeholder="#C9A84C" class="color-hex"/>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Secondary Colour</label>
+                  <div class="color-input-wrap">
+                    <input type="color" name="secondaryColor" value="#1A1A1A" class="color-picker"/>
+                    <input type="text" name="secondaryColorHex" placeholder="#1A1A1A" class="color-hex"/>
+                  </div>
+                </div>
+                <div class="form-group"><label>Tagline / Slogan</label><input type="text" name="tagline"/></div>
+                <div class="form-group"><label>Approved Fonts</label><input type="text" name="fonts" placeholder="e.g. Helvetica, Montserrat"/></div>
+                <div class="form-group full-span"><label>Brand Values (3–5 words)</label><input type="text" name="brandValues" placeholder="e.g. Reliable, Premium, Modern, Trustworthy"/></div>
+                <div class="form-group full-span"><label>Logo Drive Link</label><input type="url" name="logoLink" placeholder="Google Drive / Dropbox link to logo files"/></div>
+              </div>
+            </div>
+
+            <div class="brief-section">
+              <div class="brief-section-header"><span class="section-num">03</span><h4>Target Buyer Profile</h4></div>
+              <div class="form-grid">
+                <div class="form-group full-span">
+                  <label>Primary Buyer Age</label>
+                  <div class="check-group">
+                    <label class="check-item"><input type="checkbox" name="buyerAge" value="18-25"/><span>18–25</span></label>
+                    <label class="check-item"><input type="checkbox" name="buyerAge" value="26-35"/><span>26–35</span></label>
+                    <label class="check-item"><input type="checkbox" name="buyerAge" value="36-50"/><span>36–50</span></label>
+                    <label class="check-item"><input type="checkbox" name="buyerAge" value="50+"/><span>50+</span></label>
+                  </div>
+                </div>
+                <div class="form-group full-span">
+                  <label>Buyer Type</label>
+                  <div class="check-group">
+                    <label class="check-item"><input type="checkbox" name="buyerType" value="first-time"/><span>First-time buyer</span></label>
+                    <label class="check-item"><input type="checkbox" name="buyerType" value="upgrader"/><span>Upgrader</span></label>
+                    <label class="check-item"><input type="checkbox" name="buyerType" value="fleet"/><span>Fleet / Business</span></label>
+                    <label class="check-item"><input type="checkbox" name="buyerType" value="enthusiast"/><span>Enthusiast</span></label>
+                  </div>
+                </div>
+                <div class="form-group full-span">
+                  <label>Budget Range</label>
+                  <div class="check-group">
+                    <label class="check-item"><input type="checkbox" name="budgetRange" value="under1m"/><span>Under KES 1M</span></label>
+                    <label class="check-item"><input type="checkbox" name="budgetRange" value="1m-3m"/><span>KES 1M–3M</span></label>
+                    <label class="check-item"><input type="checkbox" name="budgetRange" value="3m-6m"/><span>KES 3M–6M</span></label>
+                    <label class="check-item"><input type="checkbox" name="budgetRange" value="6m+"/><span>KES 6M+</span></label>
+                  </div>
+                </div>
+                <div class="form-group full-span"><label>Describe your ideal customer</label><textarea name="idealCustomer" rows="3" placeholder="Who are they, what do they care about, what drives their car purchase?"></textarea></div>
+              </div>
+            </div>
+
+            <div class="brief-section">
+              <div class="brief-section-header"><span class="section-num">04</span><h4>Content Style & Tone</h4></div>
+              <div class="form-grid">
+                <div class="form-group full-span">
+                  <label>Brand Personality</label>
+                  <div class="check-group">
+                    <label class="check-item"><input type="checkbox" name="personality" value="luxury"/><span>Luxury / Premium</span></label>
+                    <label class="check-item"><input type="checkbox" name="personality" value="practical"/><span>Practical / Value</span></label>
+                    <label class="check-item"><input type="checkbox" name="personality" value="sporty"/><span>Sporty / Exciting</span></label>
+                    <label class="check-item"><input type="checkbox" name="personality" value="family"/><span>Family / Safe</span></label>
+                  </div>
+                </div>
+                <div class="form-group full-span">
+                  <label>Preferred Visual Style</label>
+                  <div class="check-group">
+                    <label class="check-item"><input type="checkbox" name="visualStyle" value="studio"/><span>Clean studio / white</span></label>
+                    <label class="check-item"><input type="checkbox" name="visualStyle" value="outdoor"/><span>Location / outdoor</span></label>
+                    <label class="check-item"><input type="checkbox" name="visualStyle" value="urban"/><span>Urban / city</span></label>
+                    <label class="check-item"><input type="checkbox" name="visualStyle" value="lifestyle"/><span>Golden hour lifestyle</span></label>
+                  </div>
+                </div>
+                <div class="form-group full-span">
+                  <label>Video Tone</label>
+                  <div class="check-group">
+                    <label class="check-item"><input type="checkbox" name="videoTone" value="cinematic"/><span>Cinematic & dramatic</span></label>
+                    <label class="check-item"><input type="checkbox" name="videoTone" value="upbeat"/><span>Upbeat & energetic</span></label>
+                    <label class="check-item"><input type="checkbox" name="videoTone" value="informative"/><span>Calm & informative</span></label>
+                    <label class="check-item"><input type="checkbox" name="videoTone" value="aspirational"/><span>Aspirational & sleek</span></label>
+                  </div>
+                </div>
+                <div class="form-group full-span">
+                  <label>Music Style</label>
+                  <div class="check-group">
+                    <label class="check-item"><input type="checkbox" name="musicStyle" value="afrobeat"/><span>Afrobeat / Afropop</span></label>
+                    <label class="check-item"><input type="checkbox" name="musicStyle" value="electronic"/><span>Electronic / Modern</span></label>
+                    <label class="check-item"><input type="checkbox" name="musicStyle" value="orchestral"/><span>Orchestral / Epic</span></label>
+                    <label class="check-item"><input type="checkbox" name="musicStyle" value="ambient"/><span>Neutral / Ambient</span></label>
+                  </div>
+                </div>
+                <div class="form-group full-span"><label>Competitor brands you admire (content-wise)</label><textarea name="competitors" rows="2"></textarea></div>
+                <div class="form-group full-span"><label>Content you do NOT want</label><textarea name="dontWant" rows="2" placeholder="Styles, tones, or content types to avoid"></textarea></div>
+              </div>
+            </div>
+
+            <div class="brief-section">
+              <div class="brief-section-header"><span class="section-num">05</span><h4>Vehicle Stock</h4></div>
+              <div class="form-grid">
+                <div class="form-group full-span">
+                  <label>Primary Stock Type</label>
+                  <div class="check-group">
+                    <label class="check-item"><input type="checkbox" name="stockType" value="japanese"/><span>Japanese imports</span></label>
+                    <label class="check-item"><input type="checkbox" name="stockType" value="european"/><span>European</span></label>
+                    <label class="check-item"><input type="checkbox" name="stockType" value="chinese"/><span>Chinese brands</span></label>
+                    <label class="check-item"><input type="checkbox" name="stockType" value="american"/><span>American</span></label>
+                    <label class="check-item"><input type="checkbox" name="stockType" value="mixed"/><span>Mixed</span></label>
+                  </div>
+                </div>
+                <div class="form-group full-span">
+                  <label>Vehicle Condition</label>
+                  <div class="check-group">
+                    <label class="check-item"><input type="checkbox" name="condition" value="brandnew"/><span>Brand new</span></label>
+                    <label class="check-item"><input type="checkbox" name="condition" value="exjapan"/><span>Ex-Japan</span></label>
+                    <label class="check-item"><input type="checkbox" name="condition" value="localused"/><span>Locally used</span></label>
+                    <label class="check-item"><input type="checkbox" name="condition" value="mix"/><span>Mix</span></label>
+                  </div>
+                </div>
+                <div class="form-group"><label>Avg. vehicles listed per month</label><input type="number" name="avgVehicles" min="1"/></div>
+                <div class="form-group"><label>Key brands / models to prioritise</label><input type="text" name="keyModels" placeholder="e.g. Toyota Prado, Subaru Forester"/></div>
+                <div class="form-group full-span"><label>Hero / feature cars</label><textarea name="heroCars" rows="2"></textarea></div>
+              </div>
+            </div>
+
+            <div class="brief-section">
+              <div class="brief-section-header"><span class="section-num">06</span><h4>Platforms & Posting</h4></div>
+              <div class="form-grid">
+                <div class="form-group full-span">
+                  <label>Primary Platforms</label>
+                  <div class="check-group">
+                    <label class="check-item"><input type="checkbox" name="platforms" value="instagram"/><span>Instagram</span></label>
+                    <label class="check-item"><input type="checkbox" name="platforms" value="facebook"/><span>Facebook</span></label>
+                    <label class="check-item"><input type="checkbox" name="platforms" value="tiktok"/><span>TikTok</span></label>
+                    <label class="check-item"><input type="checkbox" name="platforms" value="youtube"/><span>YouTube</span></label>
+                    <label class="check-item"><input type="checkbox" name="platforms" value="website"/><span>Website</span></label>
+                    <label class="check-item"><input type="checkbox" name="platforms" value="jiji"/><span>Jiji / OLX</span></label>
+                  </div>
+                </div>
+                <div class="form-group full-span">
+                  <label>Content Frequency</label>
+                  <div class="check-group">
+                    <label class="check-item"><input type="radio" name="frequency" value="daily"/><span>Daily</span></label>
+                    <label class="check-item"><input type="radio" name="frequency" value="3-4x"/><span>3–4x per week</span></label>
+                    <label class="check-item"><input type="radio" name="frequency" value="weekly"/><span>Weekly</span></label>
+                    <label class="check-item"><input type="radio" name="frequency" value="as-needed"/><span>As stock arrives</span></label>
+                  </div>
+                </div>
+                <div class="form-group"><label>Who manages posting?</label><input type="text" name="postingManager"/></div>
+                <div class="form-group"><label>Approval turnaround needed</label><input type="text" name="approvalTime" placeholder="e.g. 24 hours"/></div>
+                <div class="form-group full-span"><label>Additional notes</label><textarea name="notes" rows="3" placeholder="Anything else we should know about your brand, preferences, or requirements"></textarea></div>
+              </div>
+            </div>
+
+            <div class="brief-actions">
+              <button type="button" class="btn-ghost" id="btn-save-draft">Save Draft</button>
+              <button type="submit" class="btn-primary btn-large">Submit Brand Brief</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Schedule Shoot -->
+        <div class="view" id="view-client-shoots">
+          <div class="shoot-booking-layout">
+            <div class="shoot-form-panel">
+              <h3>Book a Shoot</h3>
+              <form id="shoot-booking-form" class="brief-form">
+                <div class="form-group">
+                  <label>Shoot Type *</label>
+                  <select name="shootType" required>
+                    <option value="">Select package...</option>
+                    <option value="basic-photos">Basic Listing Package — 10 images (KES 3,500)</option>
+                    <option value="standard-photos">Standard Package — 15 images (KES 5,000)</option>
+                    <option value="premium-photos">Premium Detail Package — 20 images (KES 7,500)</option>
+                    <option value="full-lot">Full Lot Shoot — up to 10 vehicles (KES 35,000)</option>
+                    <option value="reel-30">30-Second Reel (KES 6,000)</option>
+                    <option value="reel-60">60-Second Reel (KES 9,000)</option>
+                    <option value="reel-90">90-Second Feature Reel (KES 13,000)</option>
+                    <option value="walkthrough">Walkthrough Video (KES 15,000)</option>
+                    <option value="combo-standard">Standard Combo — 15 photos + 30-sec reel (KES 9,500)</option>
+                    <option value="combo-premium">Premium Combo — 20 photos + 60-sec reel (KES 14,000)</option>
+                    <option value="combo-full">Full Feature (KES 22,000)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Preferred Date *</label>
+                  <input type="date" name="shootDate" required/>
+                </div>
+                <div class="form-group">
+                  <label>Preferred Time</label>
+                  <select name="shootTime">
+                    <option value="07:00">7:00 AM (Golden Hour)</option>
+                    <option value="08:00">8:00 AM</option>
+                    <option value="09:00">9:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="14:00">2:00 PM</option>
+                    <option value="16:00">4:00 PM</option>
+                    <option value="17:00">5:00 PM (Golden Hour)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Location / Address *</label>
+                  <input type="text" name="shootLocation" required placeholder="Where should we come?"/>
+                </div>
+                <div class="form-group">
+                  <label>Number of Vehicles</label>
+                  <input type="number" name="numVehicles" min="1" max="50" value="1"/>
+                </div>
+                <div class="form-group">
+                  <label>Vehicle Details</label>
+                  <textarea name="vehicleDetails" rows="3" placeholder="Make, model, year, colour for each vehicle. e.g. 2022 Toyota Prado VX (White), 2020 Subaru Forester (Blue)"></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Add-ons</label>
+                  <div class="check-group">
+                    <label class="check-item"><input type="checkbox" name="addons" value="drone"/><span>Drone footage (+KES 8,000)</span></label>
+                    <label class="check-item"><input type="checkbox" name="addons" value="lifestyle"/><span>Lifestyle / location shoot (+KES 12,000)</span></label>
+                    <label class="check-item"><input type="checkbox" name="addons" value="captions"/><span>Caption copywriting (+KES 500/post)</span></label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Special Instructions</label>
+                  <textarea name="instructions" rows="2" placeholder="Any special requirements, access instructions, or notes for the shoot team"></textarea>
+                </div>
+                <div class="brief-actions">
+                  <button type="submit" class="btn-primary btn-large">Request Shoot Booking</button>
+                </div>
+              </form>
+            </div>
+            <div class="shoot-history-panel">
+              <h3>My Shoots</h3>
+              <div id="client-shoots-list" class="shoot-timeline">
+                <div class="empty-state">No shoots yet. Book your first one!</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deliverables -->
+        <div class="view" id="view-client-deliverables">
+          <div class="filter-tabs" style="margin-bottom:1.5rem">
+            <button class="filter-tab active" data-filter="all">All</button>
+            <button class="filter-tab" data-filter="photos">Photos</button>
+            <button class="filter-tab" data-filter="video">Video</button>
+          </div>
+          <div id="client-deliverables-list" class="deliverables-grid">
+            <div class="empty-state">No deliverables yet. Your content will appear here after each shoot.</div>
+          </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="view" id="view-client-feedback">
+          <div id="client-feedback-list" class="feedback-thread">
+            <div class="empty-state">No feedback yet from Epic Cinematic Films.</div>
+          </div>
+        </div>
+
+        <!-- Invoices Client -->
+        <div class="view" id="view-client-invoices">
+          <div id="client-invoices-list" class="cards-grid">
+            <div class="empty-state">No invoices yet.</div>
+          </div>
+        </div>
+
+        <!-- Profile -->
+        <div class="view" id="view-client-profile">
+          <div class="profile-card">
+            <div class="profile-avatar-section">
+              <div class="profile-avatar" id="profile-avatar-display">CL</div>
+              <div>
+                <h3 id="profile-display-name">Client Name</h3>
+                <p id="profile-display-email">client@email.com</p>
+              </div>
+            </div>
+            <form id="profile-form" class="brief-form">
+              <div class="form-grid">
+                <div class="form-group"><label>Company Name</label><input type="text" name="company" id="profile-company"/></div>
+                <div class="form-group"><label>Contact Person</label><input type="text" name="contactName" id="profile-contact"/></div>
+                <div class="form-group"><label>Phone</label><input type="tel" name="phone" id="profile-phone"/></div>
+                <div class="form-group"><label>Email</label><input type="email" name="email" id="profile-email" disabled/></div>
+              </div>
+              <div class="brief-actions">
+                <button type="submit" class="btn-primary">Update Profile</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ MODALS ══ -->
+<div id="modal-overlay" class="modal-overlay hidden">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title">Modal</h3>
+      <button class="modal-close" id="modal-close-btn">×</button>
+    </div>
+    <div id="modal-body" class="modal-body"></div>
+  </div>
+</div>
+
+<!-- Toast notifications -->
+<div id="toast-container"></div>
+
+<!-- Firebase SDK -->
+<script type="module" src="app.js"></script>
+</body>
+</html>
