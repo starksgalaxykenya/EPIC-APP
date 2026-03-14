@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Epic Cinematic Films — Client Portal</title>
+<title>Epic Cinematic Films — Epic App v2.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet"/>
@@ -43,8 +43,8 @@
       </div>
       <div id="auth-register" class="auth-form">
         <div class="form-group">
-          <label>Dealership / Company Name</label>
-          <input type="text" id="reg-company" placeholder="ABC Motors Ltd"/>
+          <label>Company / Organization Name</label>
+          <input type="text" id="reg-company" placeholder="ABC Motors Ltd / Event Co."/>
         </div>
         <div class="form-group">
           <label>Contact Person</label>
@@ -64,6 +64,10 @@
         </div>
         <button class="btn-primary" id="btn-register">Create Account</button>
         <div id="reg-error" class="form-error hidden"></div>
+      </div>
+      <div class="guest-section">
+        <p>Just exploring? Try our guest mode.</p>
+        <button class="btn-ghost btn-sm" id="btn-guest">Continue as Guest</button>
       </div>
     </div>
     <p class="auth-note">Epic Cinematic Films Client Portal — Nairobi, Kenya</p>
@@ -97,7 +101,11 @@
         </a>
         <a class="nav-item" data-view="admin-shoots" href="#">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Shoots
+          Bookings
+        </a>
+        <a class="nav-item" data-view="admin-products" href="#">
+          <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          Products & Pricing
         </a>
         <a class="nav-item" data-view="admin-feedback" href="#">
           <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -141,7 +149,6 @@
 
       <!-- ADMIN VIEWS -->
       <div class="view-container">
-
         <!-- Dashboard -->
         <div class="view active" id="view-admin-dashboard">
           <div class="stats-grid">
@@ -151,7 +158,7 @@
             </div>
             <div class="stat-card">
               <div class="stat-icon accent"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-              <div class="stat-body"><span class="stat-num" id="stat-shoots">0</span><span class="stat-label">Scheduled Shoots</span></div>
+              <div class="stat-body"><span class="stat-num" id="stat-bookings">0</span><span class="stat-label">Upcoming Bookings</span></div>
             </div>
             <div class="stat-card">
               <div class="stat-icon gold"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
@@ -165,9 +172,9 @@
 
           <div class="dashboard-grid">
             <div class="dash-panel">
-              <div class="panel-header"><h3>Upcoming Shoots</h3><a href="#" class="panel-link" data-view="admin-shoots">View All</a></div>
-              <div id="admin-upcoming-shoots" class="shoot-list">
-                <div class="empty-state">No shoots scheduled yet.</div>
+              <div class="panel-header"><h3>Upcoming Bookings</h3><a href="#" class="panel-link" data-view="admin-shoots">View All</a></div>
+              <div id="admin-upcoming-bookings" class="shoot-list">
+                <div class="empty-state">No bookings scheduled yet.</div>
               </div>
             </div>
             <div class="dash-panel">
@@ -207,7 +214,7 @@
           <div id="admin-briefs-list" class="cards-grid"></div>
         </div>
 
-        <!-- Shoots Admin -->
+        <!-- Bookings Admin -->
         <div class="view" id="view-admin-shoots">
           <div class="view-toolbar">
             <div class="filter-tabs">
@@ -215,9 +222,18 @@
               <button class="filter-tab" data-filter="upcoming">Upcoming</button>
               <button class="filter-tab" data-filter="completed">Completed</button>
             </div>
-            <button class="btn-primary btn-sm" id="btn-create-shoot">+ New Shoot</button>
+            <button class="btn-primary btn-sm" id="btn-create-booking">+ New Booking</button>
           </div>
           <div id="admin-shoots-list" class="cards-grid"></div>
+        </div>
+
+        <!-- Products & Pricing -->
+        <div class="view" id="view-admin-products">
+          <div class="view-toolbar">
+            <h3 style="flex:1">Service Products</h3>
+            <button class="btn-primary btn-sm" id="btn-add-product">+ Add Product Category</button>
+          </div>
+          <div id="admin-products-list" class="cards-grid"></div>
         </div>
 
         <!-- Feedback -->
@@ -256,7 +272,7 @@
       <div class="sidebar-brand">
         <div class="sidebar-logo">ECF</div>
         <div class="sidebar-brand-text">
-          <span class="brand-name" id="client-brand-name">MY BRAND</span>
+          <span class="brand-name" id="client-brand-name">MY COMPANY</span>
           <span class="brand-role client-role">CLIENT</span>
         </div>
       </div>
@@ -269,9 +285,9 @@
           <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Brand Brief
         </a>
-        <a class="nav-item" data-view="client-shoots" href="#">
+        <a class="nav-item" data-view="client-bookings" href="#">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Schedule Shoot
+          Book Services
         </a>
         <a class="nav-item" data-view="client-deliverables" href="#">
           <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -285,6 +301,10 @@
         <a class="nav-item" data-view="client-invoices" href="#">
           <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           Invoices
+        </a>
+        <a class="nav-item" data-view="client-estimator" href="#">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Cost Estimator
         </a>
         <a class="nav-item" data-view="client-profile" href="#">
           <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -318,22 +338,21 @@
       </div>
 
       <div class="view-container">
-
         <!-- Client Dashboard -->
         <div class="view active" id="view-client-dashboard">
           <div class="welcome-banner">
             <div class="welcome-text">
               <h2 id="client-welcome-name">Welcome back</h2>
-              <p>Here's your content overview with Epic Cinematic Films.</p>
+              <p>Your creative partner for cinematic content.</p>
             </div>
             <div class="welcome-cta">
-              <button class="btn-primary" data-view="client-shoots">Schedule a Shoot</button>
+              <button class="btn-primary" data-view="client-bookings">Book Services</button>
             </div>
           </div>
           <div class="stats-grid">
             <div class="stat-card">
               <div class="stat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-              <div class="stat-body"><span class="stat-num" id="cstat-shoots">0</span><span class="stat-label">Total Shoots</span></div>
+              <div class="stat-body"><span class="stat-num" id="cstat-bookings">0</span><span class="stat-label">Total Bookings</span></div>
             </div>
             <div class="stat-card">
               <div class="stat-icon accent"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
@@ -350,8 +369,8 @@
           </div>
           <div class="dashboard-grid">
             <div class="dash-panel">
-              <div class="panel-header"><h3>Next Shoot</h3></div>
-              <div id="client-next-shoot" class="next-shoot-card"><div class="empty-state">No upcoming shoots. <a href="#" data-view="client-shoots">Schedule one →</a></div></div>
+              <div class="panel-header"><h3>Next Booking</h3></div>
+              <div id="client-next-booking" class="next-shoot-card"><div class="empty-state">No upcoming bookings. <a href="#" data-view="client-bookings">Book now →</a></div></div>
             </div>
             <div class="dash-panel">
               <div class="panel-header"><h3>Latest Feedback from ECF</h3></div>
@@ -364,22 +383,35 @@
           </div>
         </div>
 
-        <!-- Brand Brief -->
+        <!-- Brand Brief (same as before) -->
         <div class="view" id="view-client-brief">
+          <!-- Brand brief form content (same as original) -->
           <div class="brief-intro">
             <h3>Your Brand Brief</h3>
-            <p>This information helps us keep every photo and video consistent with your brand. Fill in as much detail as possible — you can update it anytime.</p>
+            <p>This information helps us keep every piece of content consistent with your brand. Fill in as much detail as possible — you can update it anytime.</p>
           </div>
           <div class="brief-status-bar" id="brief-completion-bar">
             <div class="brief-progress-label">Brief Completion: <span id="brief-pct">0%</span></div>
             <div class="brief-progress-track"><div class="brief-progress-fill" id="brief-fill" style="width:0%"></div></div>
           </div>
           <form id="brand-brief-form" class="brief-form">
+            <!-- Company Information (simplified for all business types) -->
             <div class="brief-section">
-              <div class="brief-section-header"><span class="section-num">01</span><h4>Dealership Information</h4></div>
+              <div class="brief-section-header"><span class="section-num">01</span><h4>Company Information</h4></div>
               <div class="form-grid">
-                <div class="form-group"><label>Dealership Name *</label><input type="text" name="dealershipName" required/></div>
+                <div class="form-group"><label>Company Name *</label><input type="text" name="companyName" required/></div>
                 <div class="form-group"><label>Trading Name</label><input type="text" name="tradingName"/></div>
+                <div class="form-group"><label>Industry / Sector</label><select name="industry">
+                  <option value="">Select industry...</option>
+                  <option value="automotive">Automotive / Car Dealership</option>
+                  <option value="events">Events & Entertainment</option>
+                  <option value="corporate">Corporate / Commercial</option>
+                  <option value="realestate">Real Estate</option>
+                  <option value="hospitality">Hospitality & Tourism</option>
+                  <option value="fashion">Fashion & Lifestyle</option>
+                  <option value="tech">Technology</option>
+                  <option value="other">Other</option>
+                </select></div>
                 <div class="form-group"><label>Location / Address *</label><input type="text" name="location" required/></div>
                 <div class="form-group"><label>Phone / WhatsApp *</label><input type="tel" name="phone" required/></div>
                 <div class="form-group"><label>Website URL</label><input type="url" name="website" placeholder="https://"/></div>
@@ -389,6 +421,7 @@
               </div>
             </div>
 
+            <!-- Brand Identity section (same as original but generalized) -->
             <div class="brief-section">
               <div class="brief-section-header"><span class="section-num">02</span><h4>Brand Identity</h4></div>
               <div class="form-grid">
@@ -408,45 +441,38 @@
                 </div>
                 <div class="form-group"><label>Tagline / Slogan</label><input type="text" name="tagline"/></div>
                 <div class="form-group"><label>Approved Fonts</label><input type="text" name="fonts" placeholder="e.g. Helvetica, Montserrat"/></div>
-                <div class="form-group full-span"><label>Brand Values (3–5 words)</label><input type="text" name="brandValues" placeholder="e.g. Reliable, Premium, Modern, Trustworthy"/></div>
+                <div class="form-group full-span"><label>Brand Values (3–5 words)</label><input type="text" name="brandValues" placeholder="e.g. Innovative, Premium, Authentic, Trustworthy"/></div>
                 <div class="form-group full-span"><label>Logo Drive Link</label><input type="url" name="logoLink" placeholder="Google Drive / Dropbox link to logo files"/></div>
               </div>
             </div>
 
+            <!-- Target Audience (generalized) -->
             <div class="brief-section">
-              <div class="brief-section-header"><span class="section-num">03</span><h4>Target Buyer Profile</h4></div>
+              <div class="brief-section-header"><span class="section-num">03</span><h4>Target Audience</h4></div>
               <div class="form-grid">
                 <div class="form-group full-span">
-                  <label>Primary Buyer Age</label>
+                  <label>Primary Audience Age</label>
                   <div class="check-group">
-                    <label class="check-item"><input type="checkbox" name="buyerAge" value="18-25"/><span>18–25</span></label>
-                    <label class="check-item"><input type="checkbox" name="buyerAge" value="26-35"/><span>26–35</span></label>
-                    <label class="check-item"><input type="checkbox" name="buyerAge" value="36-50"/><span>36–50</span></label>
-                    <label class="check-item"><input type="checkbox" name="buyerAge" value="50+"/><span>50+</span></label>
+                    <label class="check-item"><input type="checkbox" name="audienceAge" value="18-25"/><span>18–25</span></label>
+                    <label class="check-item"><input type="checkbox" name="audienceAge" value="26-35"/><span>26–35</span></label>
+                    <label class="check-item"><input type="checkbox" name="audienceAge" value="36-50"/><span>36–50</span></label>
+                    <label class="check-item"><input type="checkbox" name="audienceAge" value="50+"/><span>50+</span></label>
                   </div>
                 </div>
                 <div class="form-group full-span">
-                  <label>Buyer Type</label>
+                  <label>Audience Type</label>
                   <div class="check-group">
-                    <label class="check-item"><input type="checkbox" name="buyerType" value="first-time"/><span>First-time buyer</span></label>
-                    <label class="check-item"><input type="checkbox" name="buyerType" value="upgrader"/><span>Upgrader</span></label>
-                    <label class="check-item"><input type="checkbox" name="buyerType" value="fleet"/><span>Fleet / Business</span></label>
-                    <label class="check-item"><input type="checkbox" name="buyerType" value="enthusiast"/><span>Enthusiast</span></label>
+                    <label class="check-item"><input type="checkbox" name="audienceType" value="b2b"/><span>B2B / Corporate</span></label>
+                    <label class="check-item"><input type="checkbox" name="audienceType" value="b2c"/><span>B2C / Consumers</span></label>
+                    <label class="check-item"><input type="checkbox" name="audienceType" value="luxury"/><span>Luxury / Premium</span></label>
+                    <label class="check-item"><input type="checkbox" name="audienceType" value="mass"/><span>Mass Market</span></label>
                   </div>
                 </div>
-                <div class="form-group full-span">
-                  <label>Budget Range</label>
-                  <div class="check-group">
-                    <label class="check-item"><input type="checkbox" name="budgetRange" value="under1m"/><span>Under KES 1M</span></label>
-                    <label class="check-item"><input type="checkbox" name="budgetRange" value="1m-3m"/><span>KES 1M–3M</span></label>
-                    <label class="check-item"><input type="checkbox" name="budgetRange" value="3m-6m"/><span>KES 3M–6M</span></label>
-                    <label class="check-item"><input type="checkbox" name="budgetRange" value="6m+"/><span>KES 6M+</span></label>
-                  </div>
-                </div>
-                <div class="form-group full-span"><label>Describe your ideal customer</label><textarea name="idealCustomer" rows="3" placeholder="Who are they, what do they care about, what drives their car purchase?"></textarea></div>
+                <div class="form-group full-span"><label>Describe your ideal customer/client</label><textarea name="idealCustomer" rows="3" placeholder="Who are they, what do they care about?"></textarea></div>
               </div>
             </div>
 
+            <!-- Content Style (generalized) -->
             <div class="brief-section">
               <div class="brief-section-header"><span class="section-num">04</span><h4>Content Style & Tone</h4></div>
               <div class="form-grid">
@@ -454,18 +480,18 @@
                   <label>Brand Personality</label>
                   <div class="check-group">
                     <label class="check-item"><input type="checkbox" name="personality" value="luxury"/><span>Luxury / Premium</span></label>
-                    <label class="check-item"><input type="checkbox" name="personality" value="practical"/><span>Practical / Value</span></label>
-                    <label class="check-item"><input type="checkbox" name="personality" value="sporty"/><span>Sporty / Exciting</span></label>
-                    <label class="check-item"><input type="checkbox" name="personality" value="family"/><span>Family / Safe</span></label>
+                    <label class="check-item"><input type="checkbox" name="personality" value="professional"/><span>Professional / Corporate</span></label>
+                    <label class="check-item"><input type="checkbox" name="personality" value="energetic"/><span>Energetic / Exciting</span></label>
+                    <label class="check-item"><input type="checkbox" name="personality" value="warm"/><span>Warm / Authentic</span></label>
                   </div>
                 </div>
                 <div class="form-group full-span">
                   <label>Preferred Visual Style</label>
                   <div class="check-group">
-                    <label class="check-item"><input type="checkbox" name="visualStyle" value="studio"/><span>Clean studio / white</span></label>
-                    <label class="check-item"><input type="checkbox" name="visualStyle" value="outdoor"/><span>Location / outdoor</span></label>
-                    <label class="check-item"><input type="checkbox" name="visualStyle" value="urban"/><span>Urban / city</span></label>
-                    <label class="check-item"><input type="checkbox" name="visualStyle" value="lifestyle"/><span>Golden hour lifestyle</span></label>
+                    <label class="check-item"><input type="checkbox" name="visualStyle" value="studio"/><span>Clean studio / White</span></label>
+                    <label class="check-item"><input type="checkbox" name="visualStyle" value="location"/><span>Location / Outdoor</span></label>
+                    <label class="check-item"><input type="checkbox" name="visualStyle" value="urban"/><span>Urban / City</span></label>
+                    <label class="check-item"><input type="checkbox" name="visualStyle" value="lifestyle"/><span>Lifestyle / Candid</span></label>
                   </div>
                 </div>
                 <div class="form-group full-span">
@@ -474,16 +500,7 @@
                     <label class="check-item"><input type="checkbox" name="videoTone" value="cinematic"/><span>Cinematic & dramatic</span></label>
                     <label class="check-item"><input type="checkbox" name="videoTone" value="upbeat"/><span>Upbeat & energetic</span></label>
                     <label class="check-item"><input type="checkbox" name="videoTone" value="informative"/><span>Calm & informative</span></label>
-                    <label class="check-item"><input type="checkbox" name="videoTone" value="aspirational"/><span>Aspirational & sleek</span></label>
-                  </div>
-                </div>
-                <div class="form-group full-span">
-                  <label>Music Style</label>
-                  <div class="check-group">
-                    <label class="check-item"><input type="checkbox" name="musicStyle" value="afrobeat"/><span>Afrobeat / Afropop</span></label>
-                    <label class="check-item"><input type="checkbox" name="musicStyle" value="electronic"/><span>Electronic / Modern</span></label>
-                    <label class="check-item"><input type="checkbox" name="musicStyle" value="orchestral"/><span>Orchestral / Epic</span></label>
-                    <label class="check-item"><input type="checkbox" name="musicStyle" value="ambient"/><span>Neutral / Ambient</span></label>
+                    <label class="check-item"><input type="checkbox" name="videoTone" value="storytelling"/><span>Storytelling / Narrative</span></label>
                   </div>
                 </div>
                 <div class="form-group full-span"><label>Competitor brands you admire (content-wise)</label><textarea name="competitors" rows="2"></textarea></div>
@@ -491,36 +508,9 @@
               </div>
             </div>
 
+            <!-- Platforms -->
             <div class="brief-section">
-              <div class="brief-section-header"><span class="section-num">05</span><h4>Vehicle Stock</h4></div>
-              <div class="form-grid">
-                <div class="form-group full-span">
-                  <label>Primary Stock Type</label>
-                  <div class="check-group">
-                    <label class="check-item"><input type="checkbox" name="stockType" value="japanese"/><span>Japanese imports</span></label>
-                    <label class="check-item"><input type="checkbox" name="stockType" value="european"/><span>European</span></label>
-                    <label class="check-item"><input type="checkbox" name="stockType" value="chinese"/><span>Chinese brands</span></label>
-                    <label class="check-item"><input type="checkbox" name="stockType" value="american"/><span>American</span></label>
-                    <label class="check-item"><input type="checkbox" name="stockType" value="mixed"/><span>Mixed</span></label>
-                  </div>
-                </div>
-                <div class="form-group full-span">
-                  <label>Vehicle Condition</label>
-                  <div class="check-group">
-                    <label class="check-item"><input type="checkbox" name="condition" value="brandnew"/><span>Brand new</span></label>
-                    <label class="check-item"><input type="checkbox" name="condition" value="exjapan"/><span>Ex-Japan</span></label>
-                    <label class="check-item"><input type="checkbox" name="condition" value="localused"/><span>Locally used</span></label>
-                    <label class="check-item"><input type="checkbox" name="condition" value="mix"/><span>Mix</span></label>
-                  </div>
-                </div>
-                <div class="form-group"><label>Avg. vehicles listed per month</label><input type="number" name="avgVehicles" min="1"/></div>
-                <div class="form-group"><label>Key brands / models to prioritise</label><input type="text" name="keyModels" placeholder="e.g. Toyota Prado, Subaru Forester"/></div>
-                <div class="form-group full-span"><label>Hero / feature cars</label><textarea name="heroCars" rows="2"></textarea></div>
-              </div>
-            </div>
-
-            <div class="brief-section">
-              <div class="brief-section-header"><span class="section-num">06</span><h4>Platforms & Posting</h4></div>
+              <div class="brief-section-header"><span class="section-num">05</span><h4>Platforms & Posting</h4></div>
               <div class="form-grid">
                 <div class="form-group full-span">
                   <label>Primary Platforms</label>
@@ -529,8 +519,8 @@
                     <label class="check-item"><input type="checkbox" name="platforms" value="facebook"/><span>Facebook</span></label>
                     <label class="check-item"><input type="checkbox" name="platforms" value="tiktok"/><span>TikTok</span></label>
                     <label class="check-item"><input type="checkbox" name="platforms" value="youtube"/><span>YouTube</span></label>
+                    <label class="check-item"><input type="checkbox" name="platforms" value="linkedin"/><span>LinkedIn</span></label>
                     <label class="check-item"><input type="checkbox" name="platforms" value="website"/><span>Website</span></label>
-                    <label class="check-item"><input type="checkbox" name="platforms" value="jiji"/><span>Jiji / OLX</span></label>
                   </div>
                 </div>
                 <div class="form-group full-span">
@@ -539,12 +529,11 @@
                     <label class="check-item"><input type="radio" name="frequency" value="daily"/><span>Daily</span></label>
                     <label class="check-item"><input type="radio" name="frequency" value="3-4x"/><span>3–4x per week</span></label>
                     <label class="check-item"><input type="radio" name="frequency" value="weekly"/><span>Weekly</span></label>
-                    <label class="check-item"><input type="radio" name="frequency" value="as-needed"/><span>As stock arrives</span></label>
+                    <label class="check-item"><input type="radio" name="frequency" value="as-needed"/><span>As needed</span></label>
                   </div>
                 </div>
                 <div class="form-group"><label>Who manages posting?</label><input type="text" name="postingManager"/></div>
-                <div class="form-group"><label>Approval turnaround needed</label><input type="text" name="approvalTime" placeholder="e.g. 24 hours"/></div>
-                <div class="form-group full-span"><label>Additional notes</label><textarea name="notes" rows="3" placeholder="Anything else we should know about your brand, preferences, or requirements"></textarea></div>
+                <div class="form-group full-span"><label>Additional notes</label><textarea name="notes" rows="3" placeholder="Anything else we should know about your brand or requirements"></textarea></div>
               </div>
             </div>
 
@@ -555,36 +544,38 @@
           </form>
         </div>
 
-        <!-- Schedule Shoot -->
-        <div class="view" id="view-client-shoots">
+        <!-- Bookings (with calendar) -->
+        <div class="view" id="view-client-bookings">
           <div class="shoot-booking-layout">
             <div class="shoot-form-panel">
-              <h3>Book a Shoot</h3>
-              <form id="shoot-booking-form" class="brief-form">
+              <h3>Book Our Services</h3>
+              <div class="calendar-container" id="booking-calendar">
+                <!-- Calendar will be rendered here -->
+                <div class="calendar-header">
+                  <button class="calendar-nav-btn" id="calendar-prev">←</button>
+                  <span class="calendar-month-year" id="calendar-month-year">March 2026</span>
+                  <button class="calendar-nav-btn" id="calendar-next">→</button>
+                </div>
+                <div class="calendar-weekdays">
+                  <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                </div>
+                <div class="calendar-days" id="calendar-days"></div>
+              </div>
+              <form id="booking-form" class="brief-form">
                 <div class="form-group">
-                  <label>Shoot Type *</label>
-                  <select name="shootType" required>
-                    <option value="">Select package...</option>
-                    <option value="basic-photos">Basic Listing Package — 10 images (KES 3,500)</option>
-                    <option value="standard-photos">Standard Package — 15 images (KES 5,000)</option>
-                    <option value="premium-photos">Premium Detail Package — 20 images (KES 7,500)</option>
-                    <option value="full-lot">Full Lot Shoot — up to 10 vehicles (KES 35,000)</option>
-                    <option value="reel-30">30-Second Reel (KES 6,000)</option>
-                    <option value="reel-60">60-Second Reel (KES 9,000)</option>
-                    <option value="reel-90">90-Second Feature Reel (KES 13,000)</option>
-                    <option value="walkthrough">Walkthrough Video (KES 15,000)</option>
-                    <option value="combo-standard">Standard Combo — 15 photos + 30-sec reel (KES 9,500)</option>
-                    <option value="combo-premium">Premium Combo — 20 photos + 60-sec reel (KES 14,000)</option>
-                    <option value="combo-full">Full Feature (KES 22,000)</option>
+                  <label>Service Type *</label>
+                  <select name="serviceType" id="service-type-select" required>
+                    <option value="">Select service...</option>
+                    <!-- Options will be populated from admin products -->
                   </select>
                 </div>
                 <div class="form-group">
-                  <label>Preferred Date *</label>
-                  <input type="date" name="shootDate" required/>
+                  <label>Selected Date</label>
+                  <input type="text" name="bookingDate" id="selected-date" readonly placeholder="Select a date from calendar"/>
                 </div>
                 <div class="form-group">
                   <label>Preferred Time</label>
-                  <select name="shootTime">
+                  <select name="bookingTime">
                     <option value="07:00">7:00 AM (Golden Hour)</option>
                     <option value="08:00">8:00 AM</option>
                     <option value="09:00">9:00 AM</option>
@@ -596,37 +587,35 @@
                 </div>
                 <div class="form-group">
                   <label>Location / Address *</label>
-                  <input type="text" name="shootLocation" required placeholder="Where should we come?"/>
+                  <input type="text" name="location" required placeholder="Where should we come?"/>
                 </div>
                 <div class="form-group">
-                  <label>Number of Vehicles</label>
-                  <input type="number" name="numVehicles" min="1" max="50" value="1"/>
+                  <label>Project Details</label>
+                  <textarea name="details" rows="3" placeholder="Tell us about your project - what do you need?"></textarea>
                 </div>
                 <div class="form-group">
-                  <label>Vehicle Details</label>
-                  <textarea name="vehicleDetails" rows="3" placeholder="Make, model, year, colour for each vehicle. e.g. 2022 Toyota Prado VX (White), 2020 Subaru Forester (Blue)"></textarea>
+                  <label>Estimated Budget (KES)</label>
+                  <input type="number" name="estimatedBudget" min="0" step="1000" placeholder="Optional"/>
                 </div>
                 <div class="form-group">
                   <label>Add-ons</label>
-                  <div class="check-group">
-                    <label class="check-item"><input type="checkbox" name="addons" value="drone"/><span>Drone footage (+KES 8,000)</span></label>
-                    <label class="check-item"><input type="checkbox" name="addons" value="lifestyle"/><span>Lifestyle / location shoot (+KES 12,000)</span></label>
-                    <label class="check-item"><input type="checkbox" name="addons" value="captions"/><span>Caption copywriting (+KES 500/post)</span></label>
+                  <div class="check-group" id="addons-container">
+                    <!-- Add-ons will be populated from admin products -->
                   </div>
                 </div>
                 <div class="form-group">
                   <label>Special Instructions</label>
-                  <textarea name="instructions" rows="2" placeholder="Any special requirements, access instructions, or notes for the shoot team"></textarea>
+                  <textarea name="instructions" rows="2" placeholder="Any special requirements or notes for the team"></textarea>
                 </div>
                 <div class="brief-actions">
-                  <button type="submit" class="btn-primary btn-large">Request Shoot Booking</button>
+                  <button type="submit" class="btn-primary btn-large">Request Booking</button>
                 </div>
               </form>
             </div>
             <div class="shoot-history-panel">
-              <h3>My Shoots</h3>
-              <div id="client-shoots-list" class="shoot-timeline">
-                <div class="empty-state">No shoots yet. Book your first one!</div>
+              <h3>My Bookings</h3>
+              <div id="client-bookings-list" class="shoot-timeline">
+                <div class="empty-state">No bookings yet. Book your first service!</div>
               </div>
             </div>
           </div>
@@ -638,9 +627,10 @@
             <button class="filter-tab active" data-filter="all">All</button>
             <button class="filter-tab" data-filter="photos">Photos</button>
             <button class="filter-tab" data-filter="video">Video</button>
+            <button class="filter-tab" data-filter="other">Other</button>
           </div>
           <div id="client-deliverables-list" class="deliverables-grid">
-            <div class="empty-state">No deliverables yet. Your content will appear here after each shoot.</div>
+            <div class="empty-state">No deliverables yet. Your content will appear here after each project.</div>
           </div>
         </div>
 
@@ -648,6 +638,28 @@
         <div class="view" id="view-client-feedback">
           <div id="client-feedback-list" class="feedback-thread">
             <div class="empty-state">No feedback yet from Epic Cinematic Films.</div>
+          </div>
+        </div>
+
+        <!-- Cost Estimator -->
+        <div class="view" id="view-client-estimator">
+          <div class="estimator-panel">
+            <h3 style="margin-bottom:1.5rem">Project Cost Estimator</h3>
+            <p style="color:var(--text-dim); margin-bottom:1.5rem">Select services to get an estimated cost for your project.</p>
+            
+            <div id="estimator-services" class="form-group">
+              <!-- Services will be populated from admin products -->
+            </div>
+            
+            <div class="estimator-total">
+              <span>Estimated Total:</span>
+              <span class="total-amount" id="estimator-total">KES 0</span>
+            </div>
+            
+            <div class="brief-actions" style="margin-top:1.5rem">
+              <button class="btn-primary" data-view="client-bookings">Proceed to Book</button>
+              <button class="btn-ghost" id="reset-estimator">Reset</button>
+            </div>
           </div>
         </div>
 
@@ -682,6 +694,136 @@
           </div>
         </div>
 
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ GUEST PORTAL ══ -->
+<div id="guest-screen" class="screen">
+  <div class="portal-layout">
+    <aside class="sidebar" id="guest-sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo">ECF</div>
+        <div class="sidebar-brand-text">
+          <span class="brand-name">EPIC CINEMATIC</span>
+          <span class="brand-role guest-role">GUEST</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-view="guest-estimator" href="#">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Cost Estimator
+        </a>
+        <a class="nav-item" data-view="guest-services" href="#">
+          <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          Our Services
+        </a>
+        <a class="nav-item" data-view="guest-portfolio" href="#">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Portfolio
+        </a>
+        <a class="nav-item" data-view="guest-contact" href="#">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.574 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          Contact Us
+        </a>
+      </nav>
+      <button class="sidebar-signout" id="guest-signout">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Exit Guest Mode
+      </button>
+    </aside>
+
+    <main class="portal-main">
+      <div class="portal-topbar">
+        <div class="topbar-left">
+          <button class="hamburger" id="guest-hamburger">
+            <span></span><span></span><span></span>
+          </button>
+          <h2 class="view-title" id="guest-view-title">Cost Estimator</h2>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-user">
+            <div class="user-avatar guest-avatar">G</div>
+            <span>Guest</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="view-container">
+        <!-- Guest Estimator -->
+        <div class="view active" id="view-guest-estimator">
+          <div class="estimator-panel">
+            <h3 style="margin-bottom:1.5rem">Project Cost Estimator</h3>
+            <p style="color:var(--text-dim); margin-bottom:1.5rem">Explore our services and get instant estimates for your project.</p>
+            
+            <div id="guest-estimator-services" class="form-group">
+              <!-- Services will be populated from admin products -->
+            </div>
+            
+            <div class="estimator-total">
+              <span>Estimated Total:</span>
+              <span class="total-amount" id="guest-estimator-total">KES 0</span>
+            </div>
+            
+            <div class="brief-actions" style="margin-top:1.5rem">
+              <button class="btn-primary" id="guest-contact-cta">Request Quote</button>
+              <button class="btn-ghost" id="guest-reset-estimator">Reset</button>
+            </div>
+            
+            <p style="color:var(--text-dim); font-size:0.8rem; margin-top:1rem">
+              *This is an estimate. Final pricing may vary based on specific requirements. 
+              <a href="#" data-view="guest-contact">Contact us</a> for a detailed quote.
+            </p>
+          </div>
+        </div>
+
+        <!-- Guest Services -->
+        <div class="view" id="view-guest-services">
+          <h3 style="margin-bottom:1.5rem">Our Services</h3>
+          <div id="guest-services-list" class="project-type-grid">
+            <!-- Services will be populated here -->
+          </div>
+        </div>
+
+        <!-- Guest Portfolio -->
+        <div class="view" id="view-guest-portfolio">
+          <h3 style="margin-bottom:1rem">Recent Work</h3>
+          <p style="color:var(--text-dim); margin-bottom:1.5rem">Explore some of our recent projects.</p>
+          <div class="deliverables-grid" id="guest-portfolio-grid">
+            <!-- Portfolio items from deliverables -->
+          </div>
+        </div>
+
+        <!-- Guest Contact -->
+        <div class="view" id="view-guest-contact">
+          <div class="profile-card" style="max-width:100%">
+            <h3 style="margin-bottom:1.5rem">Get in Touch</h3>
+            <form id="guest-contact-form" class="brief-form">
+              <div class="form-grid">
+                <div class="form-group"><label>Name</label><input type="text" id="guest-name" required/></div>
+                <div class="form-group"><label>Email</label><input type="email" id="guest-email" required/></div>
+                <div class="form-group"><label>Phone</label><input type="tel" id="guest-phone"/></div>
+                <div class="form-group"><label>Company</label><input type="text" id="guest-company"/></div>
+                <div class="form-group full-span"><label>Project Type</label>
+                  <select id="guest-project-type">
+                    <option value="">Select...</option>
+                    <option value="automotive">Automotive Photography</option>
+                    <option value="commercial">Commercial / Corporate</option>
+                    <option value="event">Event Coverage</option>
+                    <option value="realestate">Real Estate</option>
+                    <option value="fashion">Fashion / Lifestyle</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="form-group full-span"><label>Message</label><textarea id="guest-message" rows="4" required></textarea></div>
+              </div>
+              <div class="brief-actions">
+                <button type="submit" class="btn-primary btn-large">Send Message</button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </main>
   </div>
