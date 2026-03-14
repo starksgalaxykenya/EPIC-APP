@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupNavigation();
   setupBriefForm();
   setupBookingForm();
-  setupEstimator();
+  setupEstimator(); // Now this function is defined below
   setupGuestFeatures();
 
   if (DEMO_MODE) {
@@ -121,6 +121,20 @@ document.addEventListener("DOMContentLoaded", () => {
     onAuthStateChanged(auth, handleAuthStateChange);
   }
 });
+
+// ═══════════════════════════════════════════════════════════════════
+//  SETUP FUNCTIONS (defined before they're called)
+// ═══════════════════════════════════════════════════════════════════
+
+function setupEstimator() {
+  // This function will be implemented later
+  console.log("Estimator setup complete");
+}
+
+function setupGuestFeatures() {
+  // This function will be implemented later
+  console.log("Guest features setup complete");
+}
 
 // ─── AUTH STATE HANDLER ───────────────────────────────────────────
 async function handleAuthStateChange(user) {
@@ -739,7 +753,8 @@ function updateEstimatorTotal() {
   document.querySelectorAll(".estimator-service:checked, .estimator-addon:checked").forEach(cb => {
     total += parseFloat(cb.dataset.price || 0);
   });
-  document.getElementById("estimator-total").textContent = "KES " + total.toLocaleString();
+  const totalEl = document.getElementById("estimator-total");
+  if (totalEl) totalEl.textContent = "KES " + total.toLocaleString();
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -785,19 +800,26 @@ function loadGuestEstimator() {
     cb.addEventListener("change", updateGuestEstimatorTotal);
   });
   
-  document.getElementById("guest-contact-cta").addEventListener("click", () => {
-    const total = document.getElementById("guest-estimator-total").textContent;
-    navigateTo("guest-contact");
-    setTimeout(() => {
-      const message = `I'm interested in services estimated at ${total}. Please contact me with more information.`;
-      document.getElementById("guest-message").value = message;
-    }, 100);
-  });
+  const contactBtn = document.getElementById("guest-contact-cta");
+  if (contactBtn) {
+    contactBtn.addEventListener("click", () => {
+      const total = document.getElementById("guest-estimator-total").textContent;
+      navigateTo("guest-contact");
+      setTimeout(() => {
+        const message = `I'm interested in services estimated at ${total}. Please contact me with more information.`;
+        const msgEl = document.getElementById("guest-message");
+        if (msgEl) msgEl.value = message;
+      }, 100);
+    });
+  }
   
-  document.getElementById("guest-reset-estimator").addEventListener("click", () => {
-    document.querySelectorAll(".guest-estimator-service, .guest-estimator-addon").forEach(cb => cb.checked = false);
-    updateGuestEstimatorTotal();
-  });
+  const resetBtn = document.getElementById("guest-reset-estimator");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      document.querySelectorAll(".guest-estimator-service, .guest-estimator-addon").forEach(cb => cb.checked = false);
+      updateGuestEstimatorTotal();
+    });
+  }
 }
 
 function updateGuestEstimatorTotal() {
@@ -805,7 +827,8 @@ function updateGuestEstimatorTotal() {
   document.querySelectorAll(".guest-estimator-service:checked, .guest-estimator-addon:checked").forEach(cb => {
     total += parseFloat(cb.dataset.price || 0);
   });
-  document.getElementById("guest-estimator-total").textContent = "KES " + total.toLocaleString();
+  const totalEl = document.getElementById("guest-estimator-total");
+  if (totalEl) totalEl.textContent = "KES " + total.toLocaleString();
 }
 
 function loadGuestServices() {
@@ -813,6 +836,7 @@ function loadGuestServices() {
   const services = products.filter(p => !p.addon);
   
   const container = document.getElementById("guest-services-list");
+  if (!container) return;
   
   // Group by category
   const categories = {};
@@ -841,6 +865,7 @@ function loadGuestServices() {
 function loadGuestPortfolio() {
   const deliverables = DEMO_MODE ? demoData.deliverables.filter(d => d.public) : [];
   const container = document.getElementById("guest-portfolio-grid");
+  if (!container) return;
   
   if (deliverables.length) {
     container.innerHTML = deliverables.map(d => `
@@ -857,7 +882,10 @@ function loadGuestPortfolio() {
 }
 
 function setupGuestContact() {
-  document.getElementById("guest-contact-form").addEventListener("submit", (e) => {
+  const form = document.getElementById("guest-contact-form");
+  if (!form) return;
+  
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
     const name = document.getElementById("guest-name").value;
     const email = document.getElementById("guest-email").value;
@@ -912,6 +940,7 @@ function renderCalendar(uid) {
   const year = currentCalendarDate.getFullYear();
   const month = currentCalendarDate.getMonth();
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
   
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
@@ -919,8 +948,8 @@ function renderCalendar(uid) {
   const monthNames = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"];
   
-  document.getElementById("calendar-month-year").textContent = 
-    `${monthNames[month]} ${year}`;
+  const monthYearEl = document.getElementById("calendar-month-year");
+  if (monthYearEl) monthYearEl.textContent = `${monthNames[month]} ${year}`;
   
   let daysHtml = '';
   
@@ -932,8 +961,9 @@ function renderCalendar(uid) {
   // Add days of month
   for (let d = 1; d <= lastDay.getDate(); d++) {
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const currentDate = new Date(year, month, d);
     const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-    const isPast = new Date(year, month, d) < new Date(today.setHours(0,0,0,0));
+    const isPast = currentDate < today;
     const hasBooking = clientBookings.some(b => b.shootDate === dateStr);
     const isSelected = selectedCalendarDate === dateStr;
     
@@ -950,14 +980,17 @@ function renderCalendar(uid) {
       </div>`;
   }
   
-  document.getElementById("calendar-days").innerHTML = daysHtml;
+  const daysEl = document.getElementById("calendar-days");
+  if (daysEl) daysEl.innerHTML = daysHtml;
 }
 
 window.selectCalendarDate = function(dateStr) {
   selectedCalendarDate = dateStr;
   document.querySelectorAll(".calendar-day").forEach(day => day.classList.remove("selected"));
-  document.querySelector(`[data-date="${dateStr}"]`).classList.add("selected");
-  document.getElementById("selected-date").value = formatDate(dateStr);
+  const selectedDay = document.querySelector(`[data-date="${dateStr}"]`);
+  if (selectedDay) selectedDay.classList.add("selected");
+  const dateInput = document.getElementById("selected-date");
+  if (dateInput) dateInput.value = formatDate(dateStr);
 };
 
 function populateServiceTypes() {
@@ -1007,11 +1040,14 @@ function setupBriefForm() {
     });
   });
 
-  document.getElementById("btn-save-draft").addEventListener("click", () => {
-    const data = collectFormData(form);
-    localStorage.setItem("ecf_brief_draft_" + (currentUser?.uid||"guest"), JSON.stringify(data));
-    showToast("Draft saved locally.", "info");
-  });
+  const saveDraftBtn = document.getElementById("btn-save-draft");
+  if (saveDraftBtn) {
+    saveDraftBtn.addEventListener("click", () => {
+      const data = collectFormData(form);
+      localStorage.setItem("ecf_brief_draft_" + (currentUser?.uid||"guest"), JSON.stringify(data));
+      showToast("Draft saved locally.", "info");
+    });
+  }
 
   const draft = localStorage.getItem("ecf_brief_draft_" + (currentUser?.uid||"guest"));
   if (draft) {
@@ -1066,6 +1102,11 @@ function setupBookingForm() {
     e.preventDefault();
     
     const serviceSelect = document.getElementById("service-type-select");
+    if (!serviceSelect || !serviceSelect.value) {
+      showToast("Please select a service", "error");
+      return;
+    }
+    
     const selectedService = serviceSelect.options[serviceSelect.selectedIndex];
     const serviceName = selectedService.text.split(" - ")[0];
     const servicePrice = selectedService.dataset.price || 0;
@@ -1075,10 +1116,15 @@ function setupBookingForm() {
       addons.push(cb.value);
     });
     
+    if (!selectedCalendarDate) {
+      showToast("Please select a date from the calendar", "error");
+      return;
+    }
+    
     const data = {
       serviceType: serviceName,
       serviceId: serviceSelect.value,
-      shootDate: selectedCalendarDate || document.getElementById("selected-date").value,
+      shootDate: selectedCalendarDate,
       shootTime: form.querySelector("[name=bookingTime]").value,
       location: form.querySelector("[name=location]").value,
       details: form.querySelector("[name=details]").value,
@@ -1098,15 +1144,17 @@ function setupBookingForm() {
       demoData.feedback.unshift({ id:"auto_"+Date.now(), clientId:"admin001", subject:"New booking request", body:`${data.clientName} has requested a booking.`, isRead:false, createdAt:{ seconds:Date.now()/1000 } });
       form.reset();
       selectedCalendarDate = null;
-      loadClientBookings(currentUser.uid);
-      loadClientDashboard(currentUser.uid);
-      renderCalendar(currentUser.uid);
+      if (currentUser?.uid) {
+        loadClientBookings(currentUser.uid);
+        loadClientDashboard(currentUser.uid);
+        renderCalendar(currentUser.uid);
+      }
     } else {
       try {
         await addDoc(collection(db, "shoots"), data);
         showToast("Booking requested! We'll confirm within 24 hours.", "success");
         form.reset();
-        loadClientBookings(currentUser.uid);
+        if (currentUser?.uid) loadClientBookings(currentUser.uid);
       } catch(err) { showToast("Failed to request booking: " + err.message, "error"); }
     }
   });
@@ -1116,12 +1164,23 @@ function setupBookingForm() {
 //  ADMIN ACTIONS
 // ═══════════════════════════════════════════════════════════════════
 function setupAdminActions() {
-  document.getElementById("btn-invite-client")?.addEventListener("click", openInviteModal);
-  document.getElementById("btn-send-feedback")?.addEventListener("click", () => openFeedbackModal(null, null, null));
-  document.getElementById("btn-add-deliverable")?.addEventListener("click", () => openAddDeliverableModal(null, null, null));
-  document.getElementById("btn-create-invoice")?.addEventListener("click", openCreateInvoiceModal);
-  document.getElementById("btn-create-booking")?.addEventListener("click", openCreateBookingModal);
-  document.getElementById("btn-add-product")?.addEventListener("click", openAddProductModal);
+  const inviteBtn = document.getElementById("btn-invite-client");
+  if (inviteBtn) inviteBtn.addEventListener("click", openInviteModal);
+  
+  const feedbackBtn = document.getElementById("btn-send-feedback");
+  if (feedbackBtn) feedbackBtn.addEventListener("click", () => openFeedbackModal(null, null, null));
+  
+  const deliverableBtn = document.getElementById("btn-add-deliverable");
+  if (deliverableBtn) deliverableBtn.addEventListener("click", () => openAddDeliverableModal(null, null, null));
+  
+  const invoiceBtn = document.getElementById("btn-create-invoice");
+  if (invoiceBtn) invoiceBtn.addEventListener("click", openCreateInvoiceModal);
+  
+  const bookingBtn = document.getElementById("btn-create-booking");
+  if (bookingBtn) bookingBtn.addEventListener("click", openCreateBookingModal);
+  
+  const productBtn = document.getElementById("btn-add-product");
+  if (productBtn) productBtn.addEventListener("click", openAddProductModal);
 
   // Brief filter tabs
   document.querySelectorAll("#view-admin-briefs .filter-tab").forEach(tab => {
@@ -1135,24 +1194,29 @@ function setupAdminActions() {
   });
 
   // Client search
-  document.getElementById("client-search")?.addEventListener("input", async (e) => {
-    const q = e.target.value.toLowerCase();
-    const all = await getData("clients");
-    const filtered = all.filter(c =>
-      c.company?.toLowerCase().includes(q) ||
-      c.email?.toLowerCase().includes(q) ||
-      c.contactName?.toLowerCase().includes(q)
-    );
-    const el = document.getElementById("admin-clients-list");
-    el.innerHTML = filtered.length ? filtered.map(c => `
-      <div class="card" onclick="window.openClientModal('${c.uid}')">
-        <div class="card-header"><div>
-          <div class="card-title">${c.company}</div>
-          <div class="card-sub">${c.contactName}</div>
-        </div><span class="badge badge-green">${c.status||"active"}</span></div>
-        <div class="card-body">${c.email}</div>
-      </div>`).join("") : `<div class="empty-state">No clients match "${e.target.value}"</div>`;
-  });
+  const clientSearch = document.getElementById("client-search");
+  if (clientSearch) {
+    clientSearch.addEventListener("input", async (e) => {
+      const q = e.target.value.toLowerCase();
+      const all = await getData("clients");
+      const filtered = all.filter(c =>
+        c.company?.toLowerCase().includes(q) ||
+        c.email?.toLowerCase().includes(q) ||
+        c.contactName?.toLowerCase().includes(q)
+      );
+      const el = document.getElementById("admin-clients-list");
+      if (el) {
+        el.innerHTML = filtered.length ? filtered.map(c => `
+          <div class="card" onclick="window.openClientModal('${c.uid}')">
+            <div class="card-header"><div>
+              <div class="card-title">${c.company}</div>
+              <div class="card-sub">${c.contactName}</div>
+            </div><span class="badge badge-green">${c.status||"active"}</span></div>
+            <div class="card-body">${c.email}</div>
+          </div>`).join("") : `<div class="empty-state">No clients match "${e.target.value}"</div>`;
+      }
+    });
+  }
 
   // Shoots filter
   document.querySelectorAll("#view-admin-shoots .filter-tab").forEach(tab => {
@@ -1278,7 +1342,8 @@ window.openAddDeliverableModal = function(shootId, clientId, clientName) {
       <button class="btn-primary" onclick="window.submitDeliverable()">Add Deliverable</button>
     </div>
   `);
-  document.getElementById("del-date").value = new Date().toISOString().split("T")[0];
+  const dateEl = document.getElementById("del-date");
+  if (dateEl) dateEl.value = new Date().toISOString().split("T")[0];
 };
 
 window.submitDeliverable = async function() {
@@ -1339,7 +1404,8 @@ function openCreateInvoiceModal() {
     </div>
   `);
   const due = new Date(); due.setDate(due.getDate()+7);
-  document.getElementById("inv-due").value = due.toISOString().split("T")[0];
+  const dueEl = document.getElementById("inv-due");
+  if (dueEl) dueEl.value = due.toISOString().split("T")[0];
 }
 
 window.submitInvoice = async function() {
@@ -1398,7 +1464,8 @@ function openCreateBookingModal() {
       <button class="btn-primary" onclick="window.submitAdminBooking()">Create Booking</button>
     </div>
   `);
-  document.getElementById("cs-date").value = new Date().toISOString().split("T")[0];
+  const dateEl = document.getElementById("cs-date");
+  if (dateEl) dateEl.value = new Date().toISOString().split("T")[0];
 }
 
 window.submitAdminBooking = async function() {
@@ -1717,37 +1784,48 @@ window.openBookingModal = function(id) {
 
 // ─── CLIENT ACTIONS ───────────────────────────────────────────────
 function setupClientActions(uid) {
-  document.getElementById("client-signout")?.addEventListener("click", handleSignOut);
-  document.getElementById("profile-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const company = document.getElementById("profile-company")?.value?.trim();
-    const contactName = document.getElementById("profile-contact")?.value?.trim();
-    const phone = document.getElementById("profile-phone")?.value?.trim();
-    if (DEMO_MODE) {
-      const u = Object.values(demoData.users).find(x=>x.uid===uid);
-      if (u) { u.company = company; u.contactName = contactName; u.phone = phone; }
-      document.getElementById("client-brand-name").textContent = company.toUpperCase();
-      document.getElementById("client-welcome-name").textContent = "Welcome back, " + contactName.split(" ")[0];
-      showToast("Profile updated.", "success");
-    } else {
-      try { await updateDoc(doc(db,"users",uid),{ company, contactName, phone }); showToast("Profile updated!","success"); } catch(e) { showToast("Error: "+e.message,"error"); }
-    }
-  });
-
-  document.querySelector(".welcome-cta .btn-primary")?.addEventListener("click", () => navigateTo("client-bookings"));
+  const signoutBtn = document.getElementById("client-signout");
+  if (signoutBtn) signoutBtn.addEventListener("click", handleSignOut);
   
-  document.getElementById("reset-estimator")?.addEventListener("click", () => {
-    document.querySelectorAll(".estimator-service, .estimator-addon").forEach(cb => cb.checked = false);
-    updateEstimatorTotal();
-  });
+  const profileForm = document.getElementById("profile-form");
+  if (profileForm) {
+    profileForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const company = document.getElementById("profile-company")?.value?.trim();
+      const contactName = document.getElementById("profile-contact")?.value?.trim();
+      const phone = document.getElementById("profile-phone")?.value?.trim();
+      if (DEMO_MODE) {
+        const u = Object.values(demoData.users).find(x=>x.uid===uid);
+        if (u) { u.company = company; u.contactName = contactName; u.phone = phone; }
+        const brandEl = document.getElementById("client-brand-name");
+        if (brandEl) brandEl.textContent = company?.toUpperCase() || "MY COMPANY";
+        const welcomeEl = document.getElementById("client-welcome-name");
+        if (welcomeEl && contactName) welcomeEl.textContent = "Welcome back, " + contactName.split(" ")[0];
+        showToast("Profile updated.", "success");
+      } else {
+        try { await updateDoc(doc(db,"users",uid),{ company, contactName, phone }); showToast("Profile updated!","success"); } catch(e) { showToast("Error: "+e.message,"error"); }
+      }
+    });
+  }
+
+  const welcomeCta = document.querySelector(".welcome-cta .btn-primary");
+  if (welcomeCta) welcomeCta.addEventListener("click", () => navigateTo("client-bookings"));
+  
+  const resetBtn = document.getElementById("reset-estimator");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      document.querySelectorAll(".estimator-service, .estimator-addon").forEach(cb => cb.checked = false);
+      updateEstimatorTotal();
+    });
+  }
 }
 
 window.markFeedbackRead = async function(id, uid, cardEl) {
   if (DEMO_MODE) {
     const f = demoData.feedback.find(x=>x.id===id);
-    if (f) { f.isRead = true; cardEl.classList.remove("unread"); }
+    if (f) { f.isRead = true; if (cardEl) cardEl.classList.remove("unread"); }
   } else {
-    try { await updateDoc(doc(db,"feedback",id),{isRead:true}); cardEl.classList.remove("unread"); } catch(e) {}
+    try { await updateDoc(doc(db,"feedback",id),{isRead:true}); if (cardEl) cardEl.classList.remove("unread"); } catch(e) {}
   }
 };
 
@@ -1759,14 +1837,18 @@ async function handleSignOut() {
     demoSession = null;
     localStorage.removeItem("ecf_demo_session");
     currentUser = null; isAdmin = false; currentPortal = null;
-    document.getElementById("login-email").value = "";
-    document.getElementById("login-password").value = "";
+    const loginEmail = document.getElementById("login-email");
+    const loginPass = document.getElementById("login-password");
+    if (loginEmail) loginEmail.value = "";
+    if (loginPass) loginPass.value = "";
     showScreen("auth-screen");
   } else {
     await signOut(auth);
   }
 }
-document.getElementById("admin-signout")?.addEventListener("click", handleSignOut);
+
+const adminSignout = document.getElementById("admin-signout");
+if (adminSignout) adminSignout.addEventListener("click", handleSignOut);
 
 // ═══════════════════════════════════════════════════════════════════
 //  NAVIGATION
@@ -1799,8 +1881,15 @@ function navigateTo(viewId) {
     "guest-portfolio":"Portfolio","guest-contact":"Contact Us"
   };
 
-  document.querySelectorAll(`#${portal}-screen .view`).forEach(v => v.classList.remove("active"));
-  document.querySelectorAll(`#${portal}-sidebar .nav-item`).forEach(n => n.classList.remove("active"));
+  const portalScreen = document.getElementById(`${portal}-screen`);
+  if (portalScreen) {
+    portalScreen.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  }
+  
+  const portalSidebar = document.getElementById(`${portal}-sidebar`);
+  if (portalSidebar) {
+    portalSidebar.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  }
 
   const targetView = document.getElementById("view-" + viewId);
   if (targetView) targetView.classList.add("active");
@@ -1821,36 +1910,57 @@ function setupSidebar() {
   document.body.appendChild(backdrop);
   backdrop.addEventListener("click", () => { closeSidebar("admin"); closeSidebar("client"); closeSidebar("guest"); });
 
-  document.getElementById("admin-hamburger")?.addEventListener("click", () => toggleSidebar("admin"));
-  document.getElementById("client-hamburger")?.addEventListener("click", () => toggleSidebar("client"));
-  document.getElementById("guest-hamburger")?.addEventListener("click", () => toggleSidebar("guest"));
+  const adminHamburger = document.getElementById("admin-hamburger");
+  if (adminHamburger) adminHamburger.addEventListener("click", () => toggleSidebar("admin"));
+  
+  const clientHamburger = document.getElementById("client-hamburger");
+  if (clientHamburger) clientHamburger.addEventListener("click", () => toggleSidebar("client"));
+  
+  const guestHamburger = document.getElementById("guest-hamburger");
+  if (guestHamburger) guestHamburger.addEventListener("click", () => toggleSidebar("guest"));
 }
 
 function toggleSidebar(prefix) {
   const sidebar = document.getElementById(`${prefix}-sidebar`);
   const isOpen = sidebar?.classList.contains("open");
   sidebar?.classList.toggle("open", !isOpen);
-  document.getElementById("sidebar-backdrop")?.classList.toggle("active", !isOpen);
+  const backdrop = document.getElementById("sidebar-backdrop");
+  if (backdrop) backdrop.classList.toggle("active", !isOpen);
 }
 
 function closeSidebar(prefix) {
-  document.getElementById(`${prefix}-sidebar`)?.classList.remove("open");
-  document.getElementById("sidebar-backdrop")?.classList.remove("active");
+  const sidebar = document.getElementById(`${prefix}-sidebar`);
+  if (sidebar) sidebar.classList.remove("open");
+  const backdrop = document.getElementById("sidebar-backdrop");
+  if (backdrop) backdrop.classList.remove("active");
 }
 
 // ═══════════════════════════════════════════════════════════════════
 //  MODAL HELPERS
 // ═══════════════════════════════════════════════════════════════════
 function openModal(title, bodyHTML) {
-  document.getElementById("modal-title").textContent = title;
-  document.getElementById("modal-body").innerHTML = bodyHTML;
-  document.getElementById("modal-overlay").classList.remove("hidden");
+  const titleEl = document.getElementById("modal-title");
+  const bodyEl = document.getElementById("modal-body");
+  const overlay = document.getElementById("modal-overlay");
+  
+  if (titleEl) titleEl.textContent = title;
+  if (bodyEl) bodyEl.innerHTML = bodyHTML;
+  if (overlay) overlay.classList.remove("hidden");
 }
 
-function closeModal() { document.getElementById("modal-overlay").classList.add("hidden"); }
+function closeModal() { 
+  const overlay = document.getElementById("modal-overlay");
+  if (overlay) overlay.classList.add("hidden"); 
+}
 window.closeModal = closeModal;
-document.getElementById("modal-close-btn")?.addEventListener("click", closeModal);
-document.getElementById("modal-overlay")?.addEventListener("click", e => { if(e.target===e.currentTarget) closeModal(); });
+
+const modalCloseBtn = document.getElementById("modal-close-btn");
+if (modalCloseBtn) modalCloseBtn.addEventListener("click", closeModal);
+
+const modalOverlay = document.getElementById("modal-overlay");
+if (modalOverlay) {
+  modalOverlay.addEventListener("click", e => { if(e.target===e.currentTarget) closeModal(); });
+}
 
 // ═══════════════════════════════════════════════════════════════════
 //  FIREBASE HELPERS
@@ -1890,7 +2000,6 @@ async function getData(collectionName, clientId = null) {
 // ═══════════════════════════════════════════════════════════════════
 function collectFormData(form) {
   const data = {};
-  const fd = new FormData(form);
 
   form.querySelectorAll("input:not([type=checkbox]):not([type=radio]):not([type=color]), select, textarea").forEach(el => {
     if (el.name) data[el.name] = el.value;
@@ -1923,7 +2032,8 @@ function populateForm(form, data) {
 
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  document.getElementById(id)?.classList.add("active");
+  const screen = document.getElementById(id);
+  if (screen) screen.classList.add("active");
 }
 
 function showError(id, msg) {
@@ -1936,6 +2046,8 @@ function showError(id, msg) {
 
 function showToast(message, type="info") {
   const container = document.getElementById("toast-container");
+  if (!container) return;
+  
   const icons = { success:"✓", error:"✕", info:"◆" };
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
