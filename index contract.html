@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EPIC CINEMATIC · FULL CONTRACT MANAGER</title>
+  <!-- fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* === INLINED styles (1).css (exactly as given) + custom additions === */
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #E2C97E;
+      --gold-dim: rgba(201,168,76,0.15);
+      --dark: #0D0D0D;
+      --dark2: #141414;
+      --dark3: #1C1C1C;
+      --dark4: #242424;
+      --mid: #555;
+      --text: #E8E4DC;
+      --text-dim: #999;
+      --accent: #3B82F6;
+      --accent-dim: rgba(59,130,246,0.15);
+      --green: #22C55E;
+      --green-dim: rgba(34,197,94,0.15);
+      --red: #EF4444;
+      --red-dim: rgba(239,68,68,0.15);
+      --border: rgba(255,255,255,0.07);
+      --border-gold: rgba(201,168,76,0.3);
+      --shadow: 0 8px 40px rgba(0,0,0,0.6);
+      --radius: 10px;
+      --radius-sm: 6px;
+      --transition: 0.2s ease;
+    }
+    *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .screen { display: none; min-height: 100vh; }
+    .screen.active { display: block; }
+    .auth-bg { position: fixed; inset: 0; z-index: 0; background: linear-gradient(135deg, #0D0D0D 0%, #1A1209 50%, #0D0D0D 100%); overflow: hidden; }
+    .auth-container { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+    .auth-brand { text-align: center; }
+    .auth-logo-mark { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.4em; color: var(--gold); border: 1px solid var(--border-gold); display: inline-block; padding: 0.4em 0.8em; margin-bottom: 1rem; }
+    .auth-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 300; color: var(--text); }
+    .auth-title span { color: var(--gold); }
+    .auth-card { background: var(--dark3); border: 1px solid var(--border); border-top: 1px solid var(--border-gold); border-radius: var(--radius); padding: 2rem; width: 100%; max-width: 1300px; box-shadow: var(--shadow); }
+    .btn-primary { background: var(--gold); color: #0D0D0D; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-sm); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: var(--transition); }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .btn-primary.btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 0.65rem 1.25rem; border-radius: var(--radius-sm); font-size: 0.85rem; cursor: pointer; transition: var(--transition); }
+    .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-ghost.btn-sm { padding: 0.45rem 0.9rem; }
+    .filter-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; margin: 1rem 0; }
+    .filter-tab { background: var(--dark3); border: 1px solid var(--border); color: var(--text-dim); font-size: 0.78rem; font-weight: 500; padding: 0.4rem 0.9rem; border-radius: 20px; cursor: pointer; text-transform: uppercase; }
+    .filter-tab.active { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+    .search-input { background: var(--dark3); border: 1px solid var(--border); color: var(--text); padding: 0.55rem 0.85rem; border-radius: var(--radius-sm); outline: none; min-width: 220px; }
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+    .card { background: var(--dark3); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; cursor: pointer; position: relative; transition: var(--transition); }
+    .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gold); transform: scaleX(0); transition: transform 0.3s ease; transform-origin: left; }
+    .card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
+    .card:hover::before { transform: scaleX(1); }
+    .card-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+    .badge { font-size: 0.7rem; font-weight: 600; padding: 0.2em 0.6em; border-radius: 4px; background: var(--gold-dim); color: var(--gold); border: 1px solid var(--border-gold); text-transform: uppercase; }
+    .card-title { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 500; }
+    .rate-number { font-size: 1.5rem; font-family: 'Cormorant Garamond', serif; color: var(--gold); }
+    .expanded-detail { margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--border-gold); display: none; }
+    .card.expanded .expanded-detail { display: block; }
+    .edit-btn, .delete-btn, .contract-btn { background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.7rem; cursor: pointer; }
+    .contract-btn { border-color: var(--gold-dim); color: var(--gold); }
+    .toolbar-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; }
+    .modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.hidden { display: none; }
+    .modal { background: var(--dark3); border: 1px solid var(--border); border-top: 2px solid var(--gold); border-radius: var(--radius); width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--dark3); position: sticky; top: 0; }
+    .modal-close { background: none; border: none; color: var(--text-dim); font-size: 1.5rem; cursor: pointer; }
+    .modal-body { padding: 1.5rem; }
+    .form-group { margin-bottom: 1.1rem; }
+    .form-group label { display: block; font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.4rem; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; background: var(--dark4); border: 1px solid var(--border); color: var(--text); padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); }
+    .toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast { background: var(--dark3); border-left: 3px solid var(--gold); padding: 0.75rem 1.1rem; border-radius: var(--radius-sm); min-width: 240px; }
+    .toast.success { border-left-color: var(--green); }
+    /* contract panel */
+    .contract-panel { background: var(--dark4); border: 1px solid var(--border-gold); border-radius: var(--radius); padding: 1.5rem; margin: 1.5rem 0; }
+    .contract-clause { background: var(--dark3); border: 1px solid var(--border); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; }
+    .clause-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .remove-clause { background: none; border: 1px solid var(--red-dim); color: var(--red); padding: 0.1rem 0.5rem; border-radius: 3px; cursor: pointer; font-size: 0.7rem; }
+    /* contracts ledger */
+    .ledger-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    .ledger-table th { text-align: left; color: var(--gold); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; padding: 0.75rem 0.5rem; border-bottom: 1px solid var(--border-gold); }
+    .ledger-table td { padding: 0.75rem 0.5rem; border-bottom: 1px solid var(--border); color: var(--text-dim); font-size: 0.85rem; }
+    .ledger-table tr:hover td { background: var(--dark2); color: var(--text); }
+    .view-contract-btn { background: var(--gold-dim); border: 1px solid var(--border-gold); color: var(--gold); padding: 0.2rem 0.5rem; border-radius: 3px; cursor: pointer; font-size: 0.7rem; }
+    .tab-bar { display: flex; gap: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+    .tab { padding: 0.5rem 1rem; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; }
+    .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    @media print { .no-print, .tab-bar, .filter-tabs, .btn, .toolbar-row, .search-input { display: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="screen active" id="rate-screen">
+    <div class="auth-bg"><div class="auth-grain"></div><div class="auth-lines"></div></div>
+    <div class="auth-container">
+      <div class="auth-brand">
+        <div class="auth-logo-mark">EPIC CINEMATIC</div>
+        <div class="auth-title">CONTRACT <span>MANAGER</span></div>
+        <div class="auth-tagline">rate card · multi‑clause contracts · ledger</div>
+      </div>
+      <div class="auth-card">
+        <!-- main tab bar -->
+        <div class="tab-bar">
+          <span class="tab active" data-tab="rates">📋 RATE CARD</span>
+          <span class="tab" data-tab="contract">📄 NEW CONTRACT</span>
+          <span class="tab" data-tab="ledger">📚 CONTRACT LEDGER</span>
+        </div>
+
+        <!-- RATE CARD TAB -->
+        <div class="tab-content active" id="ratesTab">
+          <div class="toolbar-row">
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn-primary btn-sm" id="addItemBtn">➕ new item</button>
+              <div style="display: flex; gap: 0.3rem;">
+                <input type="text" class="inline-input" id="newCatName" placeholder="new category" style="background:var(--dark4); border:1px solid var(--border); color:var(--text); padding:0.3rem 0.6rem; border-radius:4px;">
+                <button class="btn-ghost btn-sm" id="addCategoryBtn">+ cat</button>
+              </div>
+            </div>
+            <button class="btn-ghost btn-sm" id="saveToFirebase">💾 save to firebase</button>
+          </div>
+          <div class="filter-tabs" id="catalogueTabs"></div>
+          <div style="display: flex; gap: 0.5rem; margin: 1rem 0;">
+            <input type="text" class="search-input" id="searchInput" placeholder="🔍 search..." style="flex:1;">
+            <button class="btn-ghost btn-sm" id="resetSearch">clear</button>
+          </div>
+          <div id="itemsGrid" class="cards-grid"></div>
+        </div>
+
+        <!-- NEW CONTRACT TAB (dynamic based on selected item) -->
+        <div class="tab-content" id="contractTab">
+          <div id="contractBuilder" style="min-height: 200px;">
+            <div style="text-align: center; color: var(--text-dim); padding: 3rem;">← select a contract button on any rate card first</div>
+          </div>
+        </div>
+
+        <!-- LEDGER TAB -->
+        <div class="tab-content" id="ledgerTab">
+          <h3 style="font-family: 'Cormorant Garamond'; margin-bottom: 1rem;">📁 EXECUTED CONTRACTS</h3>
+          <table class="ledger-table" id="contractLedger">
+            <thead><tr><th>date</th><th>client</th><th>service</th><th>value</th><th>clauses</th><th></th></tr></thead>
+            <tbody id="ledgerBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- modal for add/edit item -->
+  <div class="modal-overlay hidden" id="itemModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">edit item</h3>
+        <button class="modal-close" id="closeModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="itemForm">
+          <div class="form-group"><label>service name *</label><input type="text" id="serviceName" required></div>
+          <div class="form-group"><label>category</label><select id="itemCategory" required></select></div>
+          <div class="form-group"><label>price (KES)</label><input type="number" id="itemPrice" required></div>
+          <div class="form-group"><label>description</label><textarea id="itemDesc" rows="2"></textarea></div>
+          <div class="form-group"><label>turnaround / extra</label><input type="text" id="itemMeta"></div>
+          <div style="display: flex; gap: 0.5rem;"><button type="submit" class="btn-primary">save</button><button type="button" class="btn-ghost" id="cancelModalBtn">cancel</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    (function() {
+      const firebaseConfig = {
+        apiKey: "AIzaSyBBIl05mFeX9xPtztnU8NPtyBrLq2-IvhI",
+        authDomain: "epic-cinematic-app.firebaseapp.com",
+        projectId: "epic-cinematic-app",
+        storageBucket: "epic-cinematic-app.firebasestorage.app",
+        messagingSenderId: "419442946441",
+        appId: "1:419442946441:web:693d58a6bcc28b39a0b158",
+        measurementId: "G-YF1TEDXR7L"
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      // --- state ---
+      let items = [];
+      let categories = new Set();
+      let activeFilter = 'all';
+      let searchTerm = '';
+      let selectedItemForContract = null;
+      // contracts ledger
+      let contracts = []; // each { id, date, client, email, shootDate, instructions, serviceId, serviceName, price, category, clauses: [{text}] }
+
+      // --- dom elements ---
+      const grid = document.getElementById('itemsGrid');
+      const modal = document.getElementById('itemModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+      const cancelModalBtn = document.getElementById('cancelModalBtn');
+      const itemForm = document.getElementById('itemForm');
+      const addItemBtn = document.getElementById('addItemBtn');
+      const saveToFirebaseBtn = document.getElementById('saveToFirebase');
+      const searchInput = document.getElementById('searchInput');
+      const resetSearch = document.getElementById('resetSearch');
+      const tabsContainer = document.getElementById('catalogueTabs');
+      const categorySelect = document.getElementById('itemCategory');
+      const newCatName = document.getElementById('newCatName');
+      const addCategoryBtn = document.getElementById('addCategoryBtn');
+      const contractBuilder = document.getElementById('contractBuilder');
+      const ledgerBody = document.getElementById('ledgerBody');
+
+      // tab switching
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      let editingId = null;
+      let currentClauses = [{ text: 'Standard 50% deposit required.' }]; // default clause
+
+      // toast
+      function showToast(msg, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerText = msg;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }
+
+      // rebuild categories
+      function rebuildCategories() {
+        categories.clear();
+        items.forEach(i => { if (i.category) categories.add(i.category); });
+        if (categories.size === 0) ['photography','video','combo','retainer','addon'].forEach(c => categories.add(c));
+        renderTabs();
+        populateCategorySelect();
+      }
+
+      function renderTabs() {
+        let html = `<span class="filter-tab ${activeFilter === 'all' ? 'active' : ''}" data-cat="all">all</span>`;
+        Array.from(categories).sort().forEach(cat => {
+          html += `<span class="filter-tab ${activeFilter === cat ? 'active' : ''}" data-cat="${cat}">${cat}</span>`;
+        });
+        tabsContainer.innerHTML = html;
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeFilter = tab.dataset.cat;
+            render();
+          });
+        });
+      }
+
+      function populateCategorySelect() {
+        categorySelect.innerHTML = Array.from(categories).sort().map(c => `<option value="${c}">${c}</option>`).join('');
+      }
+
+      // render rate cards
+      function render() {
+        let filtered = items.filter(it => {
+          if (activeFilter !== 'all' && it.category !== activeFilter) return false;
+          if (searchTerm) {
+            const hay = (it.service + ' ' + (it.description||'') + ' ' + (it.meta||'')).toLowerCase();
+            return hay.includes(searchTerm.toLowerCase());
+          }
+          return true;
+        });
+
+        if (filtered.length === 0) {
+          grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1; padding:2rem;">✨ no items</div>`;
+          return;
+        }
+
+        let html = '';
+        filtered.forEach(item => {
+          html += `<div class="card" data-id="${item.id}">
+            <div class="card-header">
+              <span class="badge">${item.category}</span>
+              <div style="display:flex; gap:0.3rem;">
+                <button class="contract-btn" data-id="${item.id}" title="create contract">📄 contract</button>
+                <button class="edit-btn" data-id="${item.id}">✎</button>
+                <button class="delete-btn" data-id="${item.id}">✕</button>
+              </div>
+            </div>
+            <div class="card-title">${item.service}</div>
+            <div class="card-sub">${item.description || '—'}</div>
+            <div class="card-body">
+              <span class="rate-number">KES ${item.price?.toLocaleString() || 0}</span>
+              ${item.meta ? `<span class="badge" style="margin-left:0.5rem;">${item.meta}</span>` : ''}
+            </div>
+            <div class="expanded-detail">
+              <div>📋 ${item.description || 'no details'}</div>
+              <div>⏱️ ${item.meta || '—'}</div>
+            </div>
+          </div>`;
+        });
+        grid.innerHTML = html;
+
+        // expand/collapse
+        document.querySelectorAll('.card').forEach(card => {
+          card.addEventListener('click', (e) => {
+            if (e.target.closest('.edit-btn') || e.target.closest('.delete-btn') || e.target.closest('.contract-btn')) return;
+            card.classList.toggle('expanded');
+          });
+        });
+
+        // edit, delete, contract
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation(); const id = btn.dataset.id; const item = items.find(i => i.id === id); if (item) openEditModal(item);
+          });
+        });
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation(); const id = btn.dataset.id; items = items.filter(i => i.id !== id); rebuildCategories(); render(); showToast('deleted');
+          });
+        });
+        document.querySelectorAll('.contract-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation(); const id = btn.dataset.id; const item = items.find(i => i.id === id);
+            if (item) {
+              selectedItemForContract = item;
+              currentClauses = [{ text: '50% deposit required before shoot. Balance due within 3 days of delivery.' }, { text: 'Files delivered via Google Drive. Usage rights granted upon full payment.' }];
+              renderContractBuilder(item);
+              // switch to contract tab
+              document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+              document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+              document.querySelector('[data-tab="contract"]').classList.add('active');
+              document.getElementById('contractTab').classList.add('active');
+            }
+          });
+        });
+      }
+
+      // render contract builder (multi-clause)
+      function renderContractBuilder(item) {
+        let clausesHtml = '';
+        currentClauses.forEach((clause, index) => {
+          clausesHtml += `<div class="contract-clause">
+            <div class="clause-header">
+              <span style="color:var(--gold);">Clause ${index+1}</span>
+              <button class="remove-clause" data-index="${index}">remove</button>
+            </div>
+            <textarea class="clause-text" data-index="${index}" rows="2" style="width:100%; background:var(--dark4); border:1px solid var(--border); color:var(--text); padding:0.5rem; border-radius:4px;">${clause.text}</textarea>
+          </div>`;
+        });
+
+        contractBuilder.innerHTML = `
+          <h3 style="font-family:'Cormorant Garamond'; margin-bottom:1rem;">📄 CONTRACT for: ${item.service} (KES ${item.price})</h3>
+          <div class="contract-panel">
+            <div class="form-group"><label>client name</label><input type="text" id="conClientName" placeholder="e.g. Auto Gallery" value="Sample Client"></div>
+            <div class="form-group"><label>client email</label><input type="email" id="conClientEmail" value="client@example.com"></div>
+            <div class="form-group"><label>shoot date</label><input type="text" id="conShootDate" value="2025-06-01"></div>
+            <div class="form-group"><label>special instructions</label><textarea id="conInstructions" rows="2">Standard delivery</textarea></div>
+            
+            <h4 style="margin: 1rem 0; color:var(--gold);">⚖️ CLAUSES</h4>
+            <div id="clausesContainer">${clausesHtml}</div>
+            
+            <div style="display: flex; gap: 1rem; margin: 1rem 0;">
+              <button class="btn-ghost btn-sm" id="addClauseBtn">➕ add clause</button>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+              <button class="btn-primary btn-sm" id="saveContractBtn">💾 save contract to ledger</button>
+              <button class="btn-primary btn-sm" id="printContractBtn">🖨️ print contract</button>
+            </div>
+          </div>
+        `;
+
+        // attach clause events
+        document.getElementById('addClauseBtn').addEventListener('click', () => {
+          currentClauses.push({ text: 'New clause text here.' });
+          renderContractBuilder(item);
+        });
+
+        document.querySelectorAll('.remove-clause').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = btn.dataset.index;
+            currentClauses.splice(idx, 1);
+            renderContractBuilder(item);
+          });
+        });
+
+        document.querySelectorAll('.clause-text').forEach(textarea => {
+          textarea.addEventListener('input', (e) => {
+            const idx = e.target.dataset.index;
+            currentClauses[idx].text = e.target.value;
+          });
+        });
+
+        // print contract
+        document.getElementById('printContractBtn').addEventListener('click', () => {
+          const client = document.getElementById('conClientName')?.value || '________';
+          const email = document.getElementById('conClientEmail')?.value || '________';
+          const date = document.getElementById('conShootDate')?.value || '________';
+          const instr = document.getElementById('conInstructions')?.value || 'none';
+          const clausesText = currentClauses.map((c, i) => `${i+1}. ${c.text}`).join('<br>');
+          const contractHTML = `
+            <html><head><title>Contract</title><style>body{font-family:'DM Sans',sans-serif;padding:2rem;}</style></head>
+            <body><h1 style="color:#C9A84C;">EPIC CINEMATIC FILMS · ENGAGEMENT</h1>
+            <p><strong>Client:</strong> ${client} (${email})</p>
+            <p><strong>Shoot date:</strong> ${date}</p>
+            <p><strong>Service:</strong> ${item.service} — KES ${item.price}</p>
+            <p><strong>Description:</strong> ${item.description || ''}</p>
+            <p><strong>Special instructions:</strong> ${instr}</p>
+            <h3>Clauses</h3>${clausesText}
+            <p style="margin-top:2rem;">_________________________<br>Client signature</p>
+            <p>_________________________<br>Epic Cinematic Films</p>
+            </body></html>
+          `;
+          const w = window.open('', '_blank');
+          w.document.write(contractHTML);
+          w.document.close();
+          w.print();
+        });
+
+        // save contract to ledger
+        document.getElementById('saveContractBtn').addEventListener('click', () => {
+          const client = document.getElementById('conClientName')?.value || 'Unnamed';
+          const email = document.getElementById('conClientEmail')?.value || '';
+          const shootDate = document.getElementById('conShootDate')?.value || '';
+          const instr = document.getElementById('conInstructions')?.value || '';
+          const clausesCopy = currentClauses.map(c => ({ text: c.text }));
+
+          const newContract = {
+            id: 'c_' + Date.now() + Math.random().toString(36),
+            date: new Date().toLocaleDateString(),
+            client, email, shootDate, instructions: instr,
+            serviceId: item.id, serviceName: item.service,
+            price: item.price, category: item.category,
+            clauses: clausesCopy
+          };
+          contracts.push(newContract);
+          renderLedger();
+          showToast('contract saved to ledger', 'success');
+          // switch to ledger tab
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          document.querySelector('[data-tab="ledger"]').classList.add('active');
+          document.getElementById('ledgerTab').classList.add('active');
+        });
+      }
+
+      // render ledger
+      function renderLedger() {
+        let rows = '';
+        contracts.slice().reverse().forEach(c => {
+          rows += `<tr>
+            <td>${c.date}</td>
+            <td>${c.client}</td>
+            <td>${c.serviceName}</td>
+            <td>KES ${c.price}</td>
+            <td>${c.clauses.length} clause(s)</td>
+            <td><button class="view-contract-btn" data-id="${c.id}">view</button></td>
+          </tr>`;
+        });
+        ledgerBody.innerHTML = rows || '<tr><td colspan="6" style="text-align:center;">no contracts yet</td></tr>';
+        document.querySelectorAll('.view-contract-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            const contract = contracts.find(c => c.id === id);
+            if (!contract) return;
+            alert(`Contract: ${contract.client}\nService: ${contract.serviceName}\nClauses:\n${contract.clauses.map((c,i)=>`${i+1}. ${c.text}`).join('\n')}`);
+          });
+        });
+      }
+
+      // modal functions
+      function openEditModal(item = null) {
+        if (item) { editingId = item.id; modalTitle.innerText = 'edit item';
+          document.getElementById('serviceName').value = item.service || '';
+          document.getElementById('itemPrice').value = item.price || '';
+          document.getElementById('itemDesc').value = item.description || '';
+          document.getElementById('itemMeta').value = item.meta || '';
+        } else { editingId = null; modalTitle.innerText = 'new item';
+          document.getElementById('serviceName').value = ''; document.getElementById('itemPrice').value = '';
+          document.getElementById('itemDesc').value = ''; document.getElementById('itemMeta').value = ''; }
+        populateCategorySelect();
+        if (item?.category) document.getElementById('itemCategory').value = item.category;
+        modal.classList.remove('hidden');
+      }
+      function closeModal() { modal.classList.add('hidden'); }
+
+      // save item
+      function saveItem(e) {
+        e.preventDefault();
+        const service = document.getElementById('serviceName').value.trim();
+        const category = document.getElementById('itemCategory').value;
+        const price = parseFloat(document.getElementById('itemPrice').value);
+        const desc = document.getElementById('itemDesc').value.trim();
+        const meta = document.getElementById('itemMeta').value.trim();
+        if (!service || isNaN(price)) return showToast('service and price required', 'error');
+        if (editingId) { items = items.map(it => it.id === editingId ? { ...it, service, category, price, description: desc, meta } : it); showToast('updated'); }
+        else { const newId = 'local_' + Date.now() + Math.random().toString(36); items.push({ id: newId, service, category, price, description: desc, meta }); showToast('added'); }
+        rebuildCategories(); render(); closeModal();
+      }
+
+      // add category
+      function addCategory() {
+        const newCat = newCatName.value.trim();
+        if (!newCat) return showToast('enter category', 'error');
+        if (categories.has(newCat)) return showToast('exists', 'error');
+        categories.add(newCat); renderTabs(); populateCategorySelect(); newCatName.value = '';
+      }
+
+      // load firebase
+      async function loadFromFirebase() {
+        try {
+          const snapshot = await db.collection('rateCards').get();
+          items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), description: doc.data().description || '', meta: doc.data().meta || '' }));
+          rebuildCategories(); render(); showToast('loaded');
+        } catch (e) {
+          items = [ { id:'f1', service:'Basic Listing', category:'photography', price:3500, description:'10 images', meta:'24hrs' }, { id:'f2', service:'30s Reel', category:'video', price:6000, description:'instagram', meta:'48hrs' }, { id:'f3', service:'Combo', category:'combo', price:9500, description:'15 photos + reel', meta:'48hrs' } ];
+          rebuildCategories(); render();
+        }
+      }
+
+      // save firebase
+      async function saveToFirebase() {
+        try { const batch = db.batch(); const snapshot = await db.collection('rateCards').get(); snapshot.docs.forEach(doc => batch.delete(doc.ref));
+          items.forEach(it => { const {id,...data}=it; batch.set(db.collection('rateCards').doc(), data); }); await batch.commit(); await loadFromFirebase(); showToast('saved'); } catch (e) { showToast('error'); }
+      }
+
+      // tab switching
+      tabs.forEach(t => t.addEventListener('click', () => {
+        tabs.forEach(tab => tab.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+        t.classList.add('active');
+        const target = t.dataset.tab;
+        if (target === 'rates') document.getElementById('ratesTab').classList.add('active');
+        if (target === 'contract') document.getElementById('contractTab').classList.add('active');
+        if (target === 'ledger') { document.getElementById('ledgerTab').classList.add('active'); renderLedger(); }
+      }));
+
+      // attach listeners
+      addItemBtn.addEventListener('click', () => openEditModal(null));
+      closeModalBtn.addEventListener('click', closeModal);
+      cancelModalBtn.addEventListener('click', closeModal);
+      itemForm.addEventListener('submit', saveItem);
+      saveToFirebaseBtn.addEventListener('click', saveToFirebase);
+      resetSearch.addEventListener('click', () => { searchInput.value = ''; searchTerm = ''; render(); });
+      searchInput.addEventListener('input', (e) => { searchTerm = e.target.value; render(); });
+      addCategoryBtn.addEventListener('click', addCategory);
+
+      loadFromFirebase();
+      renderLedger();
+    })();
+  </script>
+</body>
+</html>
