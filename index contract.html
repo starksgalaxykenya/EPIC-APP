@@ -254,6 +254,7 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
   <script>
     (function() {
@@ -269,7 +270,206 @@
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
 
+      // Add authentication
+      let currentUser = null;
+      let isAdmin = false;
 
+      // Check authentication state
+      firebase.auth().onAuthStateChanged(async (user) => {
+        if (user) {
+          currentUser = user;
+          console.log('User logged in:', user.email);
+          
+          // Check if user is admin from users collection
+          try {
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            if (userDoc.exists) {
+              isAdmin = userDoc.data().role === 'admin';
+              console.log('User is admin:', isAdmin);
+              showToast(`Welcome ${user.email} (${isAdmin ? 'Admin' : 'User'})`, 'success');
+            } else {
+              // Create user document if it doesn't exist
+              await db.collection('users').doc(user.uid).set({
+                email: user.email,
+                role: 'user',
+                createdAt: new Date().toISOString()
+              });
+              isAdmin = false;
+              console.log('New user document created');
+            }
+          } catch (e) {
+            console.error('Error checking admin status:', e);
+          }
+          
+          // Hide login modal if visible
+          const loginModal = document.getElementById('loginModal');
+          if (loginModal) loginModal.remove();
+          
+          // Load data after authentication
+          await loadFromFirebase();
+          updateUIForUser();
+        } else {
+          // No user logged in - show login UI
+          console.log('No user logged in');
+          currentUser = null;
+          isAdmin = false;
+          showLoginUI();
+        }
+      });
+
+      // Add login function
+      function showLoginUI() {
+        // Check if login modal already exists
+        if (document.getElementById('loginModal')) return;
+        
+        // Create a simple login modal if not logged in
+        const loginHTML = `
+          <div class="modal-overlay" id="loginModal" style="display: flex; z-index: 10001;">
+            <div class="modal">
+              <div class="modal-header">
+                <h3>🔐 Login Required</h3>
+              </div>
+              <div class="modal-body">
+                <form id="loginForm">
+                  <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="your@email.com" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <button type="submit" class="btn-primary" style="flex:1;">Login</button>
+                    <button type="button" class="btn-primary" id="signupBtn" style="flex:1; background: var(--dark4); color: var(--gold);">Sign Up</button>
+                  </div>
+                  <div style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">
+                    <p>Demo accounts:<br>admin@test.com / admin123 (Admin)<br>user@test.com / user123 (Regular User)</p>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // Append login modal to body
+        const loginDiv = document.createElement('div');
+        loginDiv.innerHTML = loginHTML;
+        document.body.appendChild(loginDiv);
+        
+        // Handle login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('loginEmail').value;
+          const password = document.getElementById('loginPassword').value;
+          
+          try {
+            showToast('Logging in...', 'info');
+            await firebase.auth().signInWithEmailAndPassword(email, password);
+            // Modal will be removed by onAuthStateChanged
+          } catch (error) {
+            showToast('Login error: ' + error.message, 'error');
+          }
+        });
+        
+        // Handle signup
+        document.getElementById('signupBtn').addEventListener('click', async () => {
+          const email = document.getElementById('loginEmail').value;
+          const password = document.getElementById('loginPassword').value;
+          
+          if (!email || !password) {
+            showToast('Please enter email and password', 'error');
+            return;
+          }
+          
+          if (password.length < 6) {
+            showToast('Password must be at least 6 characters', 'error');
+            return;
+          }
+          
+          try {
+            showToast('Creating account...', 'info');
+            const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+            
+            // Create user document with default role 'user'
+            await db.collection('users').doc(userCredential.user.uid).set({
+              email: email,
+              role: 'user',
+              createdAt: new Date().toISOString()
+            });
+            
+            showToast('Account created! You are now logged in.', 'success');
+            // Modal will be removed by onAuthStateChanged
+          } catch (error) {
+            showToast('Signup error: ' + error.message, 'error');
+          }
+        });
+      }
+
+      // Function to update UI based on user role
+      function updateUIForUser() {
+        // Hide all admin-only elements if not admin
+        const adminElements = [
+          '#addItemBtn',
+          '#addCategoryBtn',
+          '#newCatName',
+          '#saveToFirebase',
+          '.edit-btn',
+          '.delete-btn',
+          '.subitem-btn',
+          '.add-subitem-form',
+          '.remove-clause'
+        ];
+        
+        adminElements.forEach(selector => {
+          document.querySelectorAll(selector).forEach(el => {
+            if (el) {
+              if (isAdmin) {
+                el.style.display = '';
+                el.disabled = false;
+              } else {
+                el.style.display = 'none';
+                el.disabled = true;
+              }
+            }
+          });
+        });
+        
+        // Show admin badge in header if admin
+        const authBrand = document.querySelector('.auth-brand');
+        let adminBadge = document.getElementById('adminBadge');
+        
+        if (isAdmin) {
+          if (!adminBadge) {
+            adminBadge = document.createElement('div');
+            adminBadge.id = 'adminBadge';
+            adminBadge.style.cssText = 'background: var(--gold); color: var(--dark); padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-top: 0.5rem; display: inline-block;';
+            adminBadge.textContent = '👑 ADMIN MODE';
+            authBrand.appendChild(adminBadge);
+          }
+        } else {
+          if (adminBadge) adminBadge.remove();
+        }
+        
+        // Show logout button
+        let logoutBtn = document.getElementById('logoutBtn');
+        if (currentUser) {
+          if (!logoutBtn) {
+            logoutBtn = document.createElement('button');
+            logoutBtn.id = 'logoutBtn';
+            logoutBtn.className = 'btn-ghost btn-sm';
+            logoutBtn.style.cssText = 'position: fixed; top: 1rem; left: 1rem; z-index: 10000;';
+            logoutBtn.innerHTML = '🚪 Logout';
+            logoutBtn.addEventListener('click', async () => {
+              await firebase.auth().signOut();
+              showToast('Logged out', 'info');
+            });
+            document.body.appendChild(logoutBtn);
+          }
+        } else {
+          if (logoutBtn) logoutBtn.remove();
+        }
+      }
       
 
       // --- state ---
@@ -335,8 +535,9 @@
         setTimeout(() => toast.remove(), 3000);
       }
 
-      // Mark changes as pending for auto-save
+           // Mark changes as pending for auto-save (only for admins)
       function markChangesPending() {
+        if (!isAdmin) return; // Only admins can trigger auto-save
         pendingChanges = true;
         if (autoSaveTimer) clearTimeout(autoSaveTimer);
         autoSaveTimer = setTimeout(() => {
@@ -347,10 +548,10 @@
         }, 30000); // Auto-save every 30 seconds if there are changes
       }
 
-      // Auto-save to Firestore function
+           // Auto-save to Firestore function (only for admins)
       async function autoSaveToFirestore() {
-        // Only auto-save if we have items and we're online
-        if (items.length > 0 && navigator.onLine) {
+        // Only auto-save if we have items, we're online, and user is admin
+        if (items.length > 0 && navigator.onLine && isAdmin) {
           try {
             await saveToFirebase(true); // Pass true for silent mode
           } catch (e) {
@@ -475,6 +676,7 @@
               document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
               document.querySelector('[data-tab="contract"]').classList.add('active');
               document.getElementById('contractTab').classList.add('active');
+              updateUIForUser();
             }
           });
         });
@@ -719,8 +921,13 @@
         markChangesPending(); // Mark changes for auto-save
       }
 
-      // Improved save to firebase function
+      // Improved save to firebase function with admin check
       async function saveToFirebase(silent = false) {
+        if (!isAdmin) {
+          showToast('Only admins can modify rate cards', 'error');
+          return;
+        }
+        
         try {
           if (!silent) showToast('Saving to Firestore...', 'info');
           const batch = db.batch();
@@ -754,11 +961,15 @@
           await loadFromFirebase(true);
         } catch (e) {
           console.error('Firestore save error:', e);
-          if (!silent) showToast('❌ Error saving to Firestore: ' + e.message, 'error');
+          if (e.code === 'permission-denied') {
+            showToast('❌ Permission denied. Make sure you are logged in as admin.', 'error');
+          } else {
+            if (!silent) showToast('❌ Error saving to Firestore: ' + e.message, 'error');
+          }
         }
       }
 
-      // Improved load from firebase
+        // Improved load from firebase
       async function loadFromFirebase(silent = false) {
         try {
           if (!silent) showToast('Loading from Firestore...', 'info');
@@ -785,15 +996,21 @@
               { id:'f3', service:'Combo', category:'combo', price:9500, description:'15 photos + reel', meta:'48hrs', subItems: [] } 
             ];
             if (!silent) showToast('Using default data', 'info');
-            // Auto-save default data to Firestore
-            setTimeout(autoSaveToFirestore, 1000);
+            // Auto-save default data to Firestore if admin
+            if (isAdmin) {
+              setTimeout(autoSaveToFirestore, 1000);
+            }
           }
           
           rebuildCategories(); 
           render();
         } catch (e) {
           console.error('Firestore load error:', e);
-          if (!silent) showToast('❌ Error loading from Firestore: ' + e.message, 'error');
+          if (e.code === 'permission-denied') {
+            showToast('⚠️ Please login to view rate cards', 'warning');
+          } else {
+            if (!silent) showToast('❌ Error loading from Firestore: ' + e.message, 'error');
+          }
           
           // Fallback to default data
           items = [ 
