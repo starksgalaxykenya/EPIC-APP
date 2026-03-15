@@ -2495,3 +2495,13 @@ window.deleteProduct = deleteProduct;
 window.submitInvite = submitInvite;
 window.selectCalendarDate = selectCalendarDate;
 window.markFeedbackRead = markFeedbackRead;
+
+// Handle Pricing & Contracts button click for admin
+document.addEventListener('click', function(e) {
+  if (e.target.closest('#admin-pricing-contracts-link') || 
+      (e.target.closest('.nav-item') && e.target.closest('.nav-item')?.getAttribute('data-view') === 'admin-pricing-contracts')) {
+    e.preventDefault();
+    // Open the contract manager in a new tab
+    window.open('index contract.html', '_blank');
+  }
+});
