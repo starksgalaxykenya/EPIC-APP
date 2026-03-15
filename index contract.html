@@ -199,7 +199,7 @@
                 <button class="btn-ghost btn-sm" id="addCategoryBtn">+ cat</button>
               </div>
             </div>
-            <button class="btn-ghost btn-sm" id="saveToFirebase">💾 save to firebase</button>
+            <button class="btn-ghost btn-sm" id="saveToFirebase">💾 manual save to firebase</button>
           </div>
           <div class="filter-tabs" id="catalogueTabs"></div>
           <div style="display: flex; gap: 0.5rem; margin: 1rem 0;">
@@ -269,6 +269,9 @@
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
 
+
+      
+
       // --- state ---
       let items = [];
       let categories = new Set();
@@ -305,6 +308,10 @@
       let editingId = null;
       let currentClauses = [{ text: 'Standard 50% deposit required.' }]; // default clause
 
+      // Auto-save state management
+      let pendingChanges = false;
+      let autoSaveTimer = null;
+
       // Presentation mode toggle
       let presentationMode = false;
       presentationToggle.addEventListener('click', () => {
@@ -326,6 +333,30 @@
         toast.innerText = msg;
         container.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
+      }
+
+      // Mark changes as pending for auto-save
+      function markChangesPending() {
+        pendingChanges = true;
+        if (autoSaveTimer) clearTimeout(autoSaveTimer);
+        autoSaveTimer = setTimeout(() => {
+          if (pendingChanges) {
+            autoSaveToFirestore();
+            pendingChanges = false;
+          }
+        }, 30000); // Auto-save every 30 seconds if there are changes
+      }
+
+      // Auto-save to Firestore function
+      async function autoSaveToFirestore() {
+        // Only auto-save if we have items and we're online
+        if (items.length > 0 && navigator.onLine) {
+          try {
+            await saveToFirebase(true); // Pass true for silent mode
+          } catch (e) {
+            console.log('Auto-save failed, will retry later:', e);
+          }
+        }
       }
 
       // rebuild categories
@@ -429,6 +460,7 @@
         document.querySelectorAll('.delete-btn').forEach(btn => {
           btn.addEventListener('click', (e) => {
             e.stopPropagation(); const id = btn.dataset.id; items = items.filter(i => i.id !== id); rebuildCategories(); render(); showToast('deleted');
+            markChangesPending(); // Mark changes for auto-save
           });
         });
         document.querySelectorAll('.contract-btn').forEach(btn => {
@@ -492,6 +524,7 @@
         descInput.value = '';
         render();
         showToast('sub-item added', 'success');
+        markChangesPending(); // Mark changes for auto-save
       };
 
       window.removeSubItem = function(itemId, index) {
@@ -500,6 +533,7 @@
           item.subItems.splice(index, 1);
           render();
           showToast('sub-item removed', 'info');
+          markChangesPending(); // Mark changes for auto-save
         }
       };
 
@@ -673,6 +707,7 @@
           showToast('added'); 
         }
         rebuildCategories(); render(); closeModal();
+        markChangesPending(); // Mark changes for auto-save
       }
 
       // add category
@@ -681,35 +716,105 @@
         if (!newCat) return showToast('enter category', 'error');
         if (categories.has(newCat)) return showToast('exists', 'error');
         categories.add(newCat); renderTabs(); populateCategorySelect(); newCatName.value = '';
+        markChangesPending(); // Mark changes for auto-save
       }
 
-      // load firebase
-      async function loadFromFirebase() {
+      // Improved save to firebase function
+      async function saveToFirebase(silent = false) {
         try {
+          if (!silent) showToast('Saving to Firestore...', 'info');
+          const batch = db.batch();
+          
+          // Delete all existing documents
           const snapshot = await db.collection('rateCards').get();
-          items = snapshot.docs.map(doc => ({ 
-            id: doc.id, 
-            ...doc.data(), 
-            description: doc.data().description || '', 
-            meta: doc.data().meta || '',
-            subItems: doc.data().subItems || [] 
-          }));
-          rebuildCategories(); render(); showToast('loaded');
+          snapshot.docs.forEach(doc => batch.delete(doc.ref));
+          
+          // Add all current items as new documents
+          items.forEach(it => {
+            // Create a clean copy without any undefined values
+            const data = {
+              service: it.service || '',
+              category: it.category || '',
+              price: it.price || 0,
+              description: it.description || '',
+              meta: it.meta || '',
+              subItems: (it.subItems || []).map(sub => ({
+                name: sub.name || '',
+                price: sub.price || 0,
+                description: sub.description || ''
+              }))
+            };
+            batch.set(db.collection('rateCards').doc(), data);
+          });
+          
+          await batch.commit();
+          if (!silent) showToast('✅ Successfully saved to Firestore!', 'success');
+          
+          // Reload from Firestore to ensure sync
+          await loadFromFirebase(true);
         } catch (e) {
+          console.error('Firestore save error:', e);
+          if (!silent) showToast('❌ Error saving to Firestore: ' + e.message, 'error');
+        }
+      }
+
+      // Improved load from firebase
+      async function loadFromFirebase(silent = false) {
+        try {
+          if (!silent) showToast('Loading from Firestore...', 'info');
+          const snapshot = await db.collection('rateCards').get();
+          
+          if (!snapshot.empty) {
+            items = snapshot.docs.map(doc => ({ 
+              id: doc.id, 
+              ...doc.data(), 
+              description: doc.data().description || '', 
+              meta: doc.data().meta || '',
+              subItems: (doc.data().subItems || []).map(sub => ({
+                name: sub.name || '',
+                price: sub.price || 0,
+                description: sub.description || ''
+              }))
+            }));
+            if (!silent) showToast('✅ Loaded from Firestore', 'success');
+          } else {
+            // If Firestore is empty, use default data
+            items = [ 
+              { id:'f1', service:'Basic Listing', category:'photography', price:3500, description:'10 images', meta:'24hrs', subItems: [] }, 
+              { id:'f2', service:'30s Reel', category:'video', price:6000, description:'instagram', meta:'48hrs', subItems: [] }, 
+              { id:'f3', service:'Combo', category:'combo', price:9500, description:'15 photos + reel', meta:'48hrs', subItems: [] } 
+            ];
+            if (!silent) showToast('Using default data', 'info');
+            // Auto-save default data to Firestore
+            setTimeout(autoSaveToFirestore, 1000);
+          }
+          
+          rebuildCategories(); 
+          render();
+        } catch (e) {
+          console.error('Firestore load error:', e);
+          if (!silent) showToast('❌ Error loading from Firestore: ' + e.message, 'error');
+          
+          // Fallback to default data
           items = [ 
             { id:'f1', service:'Basic Listing', category:'photography', price:3500, description:'10 images', meta:'24hrs', subItems: [] }, 
             { id:'f2', service:'30s Reel', category:'video', price:6000, description:'instagram', meta:'48hrs', subItems: [] }, 
             { id:'f3', service:'Combo', category:'combo', price:9500, description:'15 photos + reel', meta:'48hrs', subItems: [] } 
           ];
-          rebuildCategories(); render();
+          rebuildCategories(); 
+          render();
         }
       }
 
-      // save firebase
-      async function saveToFirebase() {
-        try { const batch = db.batch(); const snapshot = await db.collection('rateCards').get(); snapshot.docs.forEach(doc => batch.delete(doc.ref));
-          items.forEach(it => { const {id,...data}=it; batch.set(db.collection('rateCards').doc(), data); }); await batch.commit(); await loadFromFirebase(); showToast('saved'); } catch (e) { showToast('error'); }
-      }
+      // Online/offline detection
+      window.addEventListener('online', () => {
+        showToast('Back online - syncing with Firestore...', 'info');
+        autoSaveToFirestore();
+      });
+
+      window.addEventListener('offline', () => {
+        showToast('You are offline - changes will sync when connection returns', 'warning');
+      });
 
       // tab switching
       tabs.forEach(t => t.addEventListener('click', () => {
@@ -727,14 +832,23 @@
       closeModalBtn.addEventListener('click', closeModal);
       cancelModalBtn.addEventListener('click', closeModal);
       itemForm.addEventListener('submit', saveItem);
-      saveToFirebaseBtn.addEventListener('click', saveToFirebase);
+      saveToFirebaseBtn.addEventListener('click', () => saveToFirebase(false));
       resetSearch.addEventListener('click', () => { searchInput.value = ''; searchTerm = ''; render(); });
       searchInput.addEventListener('input', (e) => { searchTerm = e.target.value; render(); });
       addCategoryBtn.addEventListener('click', addCategory);
 
+      // Initial load
       loadFromFirebase();
       renderLedger();
+
+      // Periodic auto-save check (every 5 minutes)
+      setInterval(() => {
+        if (pendingChanges && navigator.onLine) {
+          autoSaveToFirestore();
+        }
+      }, 300000); // 5 minutes
     })();
   </script>
 </body>
 </html>
+
