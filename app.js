@@ -14,6 +14,77 @@ import {
   orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+// ═══════════════════════════════════════════════════════════════════
+//  ADD THIS RIGHT AFTER YOUR IMPORTS AND BEFORE ANY FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════
+
+// Add CSS for brief cards
+const style = document.createElement('style');
+style.textContent = `
+  .brief-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  .brief-card:hover {
+    border-color: var(--border-gold);
+    transform: translateY(-2px);
+  }
+  .brief-details {
+    animation: slideDown 0.3s ease;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .details-section {
+    background: var(--dark4);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .details-section-title {
+    font-size: 0.8rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.25rem;
+  }
+  .details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+  .details-item {
+    font-size: 0.85rem;
+  }
+  .details-item.full-span {
+    grid-column: 1 / -1;
+  }
+  .details-label {
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+  .details-value {
+    color: var(--text);
+  }
+  .details-value a {
+    color: var(--gold);
+    text-decoration: none;
+  }
+  .details-value a:hover {
+    text-decoration: underline;
+  }
+  .toggle-icon {
+    transition: transform 0.3s ease;
+  }
+`;
+document.head.appendChild(style);
+
 // ─── FIREBASE CONFIG ──────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyBBIl05mFeX9xPtztnU8NPtyBrLq2-IvhI",
@@ -423,37 +494,326 @@ async function loadAdminClients() {
     </div>`).join("") : `<div class="empty-state">No clients yet.</div>`;
 }
 
+// ═══════════════════════════════════════════════════════════════════
+//  UPDATE YOUR EXISTING loadAdminBriefs FUNCTION
+// ═══════════════════════════════════════════════════════════════════
+
 async function loadAdminBriefs() {
   const briefs = await getData("briefs");
   renderBriefs(briefs);
+  addBriefToolbarButtons(); // ADD THIS LINE
 }
 
+// Update the renderBriefs function to include expandable cards
 function renderBriefs(briefs) {
   const el = document.getElementById("admin-briefs-list");
-  el.innerHTML = briefs.length ? briefs.map(b => `
-    <div class="card" onclick="window.openBriefModal('${b.id}')">
-      <div class="card-header">
-        <div>
-          <div class="card-title">${b.companyName || b.clientName || "Unknown"}</div>
-          <div class="card-sub">${b.industry || ""} · ${b.location || ""}</div>
-        </div>
-        <span class="badge ${b.status==="approved"?"badge-green":b.status==="rejected"?"badge-red":"badge-gold"}">${b.status || "pending"}</span>
-      </div>
-      <div class="card-body">
-        <div style="margin-bottom:0.5rem">
-          <div style="height:4px;background:var(--dark4);border-radius:2px;overflow:hidden">
-            <div style="height:100%;width:${b.completionPct||0}%;background:var(--gold)"></div>
+  if (!el) return;
+  
+  el.innerHTML = briefs.length ? briefs.map(b => {
+    // Format all the brief details for display
+    const details = formatBriefDetails(b);
+    
+    return `
+    <div class="card brief-card" data-brief-id="${b.id}" style="cursor:pointer">
+      <div class="card-header" onclick="event.stopPropagation();window.toggleBriefDetails('${b.id}')">
+        <div style="flex:1">
+          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem">
+            <span class="badge ${b.status==="approved"?"badge-green":b.status==="rejected"?"badge-red":"badge-gold"}">${b.status || "pending"}</span>
+            <span class="badge badge-grey">${b.industry || "Not specified"}</span>
           </div>
-          <span style="font-size:0.72rem;color:var(--text-dim)">Completion: ${b.completionPct||0}%</span>
+          <div class="card-title">${b.companyName || b.clientName || "Unknown"}</div>
+          <div class="card-sub">${b.location || ""} · ${b.tradingName ? `Trading as: ${b.tradingName}` : ""}</div>
         </div>
-        ${b.tagline ? `<em style="font-size:0.8rem;color:var(--text-dim)">"${b.tagline}"</em>` : ""}
+        <div style="display:flex; align-items:center; gap:0.5rem">
+          <div style="text-align:right">
+            <div style="font-size:0.75rem; color:var(--text-dim)">Completion</div>
+            <div style="font-size:0.9rem; color:var(--gold)">${b.completionPct||0}%</div>
+          </div>
+          <svg class="toggle-icon" id="toggle-icon-${b.id}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="transform:rotate(0deg); transition:transform 0.3s">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
       </div>
-      <div class="card-footer">
-        <button class="btn-primary btn-sm" onclick="event.stopPropagation();window.approveBrief('${b.id}')">Approve</button>
-        <button class="btn-ghost btn-sm" onclick="event.stopPropagation();window.openFeedbackModal('${b.id}','${b.clientId}','${b.companyName||b.clientName}')">Send Feedback</button>
+      
+      <!-- Progress bar -->
+      <div style="margin:0.5rem 0; height:4px; background:var(--dark4); border-radius:2px; overflow:hidden">
+        <div style="height:100%; width:${b.completionPct||0}%; background:var(--gold)"></div>
       </div>
-    </div>`).join("") : `<div class="empty-state">No brand briefs submitted yet.</div>`;
+      
+      <!-- Collapsible details section -->
+      <div id="brief-details-${b.id}" class="brief-details" style="display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border)">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1rem">
+          ${details}
+        </div>
+        
+        <!-- Action buttons -->
+        <div class="brief-actions" style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border)">
+          <button class="btn-primary btn-sm" onclick="event.stopPropagation();window.approveBrief('${b.id}')">
+            ${b.status === "approved" ? "✓ Approved" : "Approve Brief"}
+          </button>
+          <button class="btn-ghost btn-sm" onclick="event.stopPropagation();window.openFeedbackModal('${b.id}','${b.clientId}','${b.companyName||b.clientName}')">
+            Send Feedback
+          </button>
+          <button class="btn-ghost btn-sm" onclick="event.stopPropagation();window.printBrief('${b.id}')">
+            📄 Export
+          </button>
+        </div>
+      </div>
+    </div>`}).join("") : `<div class="empty-state">No brand briefs submitted yet.</div>`;
+  
+  // Add click handler for the whole card to expand/collapse
+  document.querySelectorAll('.brief-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      // Don't toggle if clicking on a button
+      if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+      const briefId = card.dataset.briefId;
+      toggleBriefDetails(briefId);
+    });
+  });
 }
+
+// Function to toggle brief details
+window.toggleBriefDetails = function(briefId) {
+  const detailsEl = document.getElementById(`brief-details-${briefId}`);
+  const iconEl = document.getElementById(`toggle-icon-${briefId}`);
+  
+  if (detailsEl && iconEl) {
+    if (detailsEl.style.display === 'none') {
+      detailsEl.style.display = 'block';
+      iconEl.style.transform = 'rotate(180deg)';
+    } else {
+      detailsEl.style.display = 'none';
+      iconEl.style.transform = 'rotate(0deg)';
+    }
+  }
+};
+
+// Function to format brief details into HTML
+function formatBriefDetails(brief) {
+  const sections = [];
+  
+  // Company Information
+  sections.push(`
+    <div class="details-section">
+      <div class="details-section-title">🏢 Company Information</div>
+      <div class="details-grid">
+        ${brief.companyName ? `<div class="details-item"><span class="details-label">Company:</span> <span class="details-value">${brief.companyName}</span></div>` : ''}
+        ${brief.tradingName ? `<div class="details-item"><span class="details-label">Trading as:</span> <span class="details-value">${brief.tradingName}</span></div>` : ''}
+        ${brief.industry ? `<div class="details-item"><span class="details-label">Industry:</span> <span class="details-value">${brief.industry}</span></div>` : ''}
+        ${brief.location ? `<div class="details-item"><span class="details-label">Location:</span> <span class="details-value">${brief.location}</span></div>` : ''}
+        ${brief.phone ? `<div class="details-item"><span class="details-label">Phone:</span> <span class="details-value">${brief.phone}</span></div>` : ''}
+        ${brief.website ? `<div class="details-item"><span class="details-label">Website:</span> <span class="details-value"><a href="${brief.website}" target="_blank">${brief.website}</a></span></div>` : ''}
+      </div>
+    </div>
+  `);
+  
+  // Social Media
+  const social = [];
+  if (brief.instagram) social.push(`📷 Instagram: ${brief.instagram}`);
+  if (brief.facebook) social.push(`📘 Facebook: ${brief.facebook}`);
+  if (brief.tiktok) social.push(`🎵 TikTok: ${brief.tiktok}`);
+  
+  if (social.length > 0) {
+    sections.push(`
+      <div class="details-section">
+        <div class="details-section-title">📱 Social Media</div>
+        <div class="details-grid">
+          ${social.map(s => `<div class="details-item"><span class="details-value">${s}</span></div>`).join('')}
+        </div>
+      </div>
+    `);
+  }
+  
+  // Brand Identity
+  if (brief.primaryColor || brief.secondaryColor || brief.tagline || brief.brandValues || brief.logoLink) {
+    sections.push(`
+      <div class="details-section">
+        <div class="details-section-title">🎨 Brand Identity</div>
+        <div class="details-grid">
+          ${brief.primaryColor ? `
+            <div class="details-item">
+              <span class="details-label">Primary Color:</span>
+              <span class="details-value" style="display:flex; align-items:center; gap:0.3rem">
+                <span style="display:inline-block; width:16px; height:16px; background:${brief.primaryColor}; border-radius:3px;"></span>
+                ${brief.primaryColor}
+              </span>
+            </div>` : ''}
+          ${brief.secondaryColor ? `
+            <div class="details-item">
+              <span class="details-label">Secondary Color:</span>
+              <span class="details-value" style="display:flex; align-items:center; gap:0.3rem">
+                <span style="display:inline-block; width:16px; height:16px; background:${brief.secondaryColor}; border-radius:3px;"></span>
+                ${brief.secondaryColor}
+              </span>
+            </div>` : ''}
+          ${brief.tagline ? `<div class="details-item"><span class="details-label">Tagline:</span> <span class="details-value">"${brief.tagline}"</span></div>` : ''}
+          ${brief.brandValues ? `<div class="details-item"><span class="details-label">Brand Values:</span> <span class="details-value">${brief.brandValues}</span></div>` : ''}
+          ${brief.fonts ? `<div class="details-item"><span class="details-label">Fonts:</span> <span class="details-value">${brief.fonts}</span></div>` : ''}
+          ${brief.logoLink ? `<div class="details-item"><span class="details-label">Logo Files:</span> <span class="details-value"><a href="${brief.logoLink}" target="_blank">View Drive →</a></span></div>` : ''}
+        </div>
+      </div>
+    `);
+  }
+  
+  // Target Audience
+  if (brief.audienceAge || brief.audienceType || brief.idealCustomer) {
+    sections.push(`
+      <div class="details-section">
+        <div class="details-section-title">👥 Target Audience</div>
+        <div class="details-grid">
+          ${brief.audienceAge ? `<div class="details-item"><span class="details-label">Age Groups:</span> <span class="details-value">${Array.isArray(brief.audienceAge) ? brief.audienceAge.join(', ') : brief.audienceAge}</span></div>` : ''}
+          ${brief.audienceType ? `<div class="details-item"><span class="details-label">Audience Type:</span> <span class="details-value">${Array.isArray(brief.audienceType) ? brief.audienceType.join(', ') : brief.audienceType}</span></div>` : ''}
+          ${brief.idealCustomer ? `<div class="details-item full-span"><span class="details-label">Ideal Customer:</span> <span class="details-value">${brief.idealCustomer}</span></div>` : ''}
+        </div>
+      </div>
+    `);
+  }
+  
+  // Content Style
+  if (brief.personality || brief.visualStyle || brief.videoTone || brief.competitors || brief.dontWant) {
+    sections.push(`
+      <div class="details-section">
+        <div class="details-section-title">🎬 Content Style</div>
+        <div class="details-grid">
+          ${brief.personality ? `<div class="details-item"><span class="details-label">Personality:</span> <span class="details-value">${Array.isArray(brief.personality) ? brief.personality.join(', ') : brief.personality}</span></div>` : ''}
+          ${brief.visualStyle ? `<div class="details-item"><span class="details-label">Visual Style:</span> <span class="details-value">${Array.isArray(brief.visualStyle) ? brief.visualStyle.join(', ') : brief.visualStyle}</span></div>` : ''}
+          ${brief.videoTone ? `<div class="details-item"><span class="details-label">Video Tone:</span> <span class="details-value">${Array.isArray(brief.videoTone) ? brief.videoTone.join(', ') : brief.videoTone}</span></div>` : ''}
+          ${brief.musicStyle ? `<div class="details-item"><span class="details-label">Music Style:</span> <span class="details-value">${Array.isArray(brief.musicStyle) ? brief.musicStyle.join(', ') : brief.musicStyle}</span></div>` : ''}
+          ${brief.competitors ? `<div class="details-item full-span"><span class="details-label">Competitors to study:</span> <span class="details-value">${brief.competitors}</span></div>` : ''}
+          ${brief.dontWant ? `<div class="details-item full-span"><span class="details-label">Content to avoid:</span> <span class="details-value">${brief.dontWant}</span></div>` : ''}
+        </div>
+      </div>
+    `);
+  }
+  
+  // Platforms & Posting
+  if (brief.platforms || brief.frequency || brief.postingManager || brief.approvalTime || brief.notes) {
+    sections.push(`
+      <div class="details-section">
+        <div class="details-section-title">📱 Platforms & Posting</div>
+        <div class="details-grid">
+          ${brief.platforms ? `<div class="details-item"><span class="details-label">Platforms:</span> <span class="details-value">${Array.isArray(brief.platforms) ? brief.platforms.join(', ') : brief.platforms}</span></div>` : ''}
+          ${brief.frequency ? `<div class="details-item"><span class="details-label">Frequency:</span> <span class="details-value">${brief.frequency}</span></div>` : ''}
+          ${brief.postingManager ? `<div class="details-item"><span class="details-label">Posted by:</span> <span class="details-value">${brief.postingManager}</span></div>` : ''}
+          ${brief.approvalTime ? `<div class="details-item"><span class="details-label">Approval time:</span> <span class="details-value">${brief.approvalTime}</span></div>` : ''}
+          ${brief.notes ? `<div class="details-item full-span"><span class="details-label">Additional notes:</span> <span class="details-value">${brief.notes}</span></div>` : ''}
+        </div>
+      </div>
+    `);
+  }
+  
+  // Metadata
+  sections.push(`
+    <div class="details-section">
+      <div class="details-section-title">📋 Metadata</div>
+      <div class="details-grid">
+        <div class="details-item"><span class="details-label">Brief ID:</span> <span class="details-value">${brief.id}</span></div>
+        <div class="details-item"><span class="details-label">Client ID:</span> <span class="details-value">${brief.clientId}</span></div>
+        <div class="details-item"><span class="details-label">Submitted:</span> <span class="details-value">${brief.createdAt ? formatDate(new Date(brief.createdAt.seconds*1000).toISOString().split('T')[0]) : 'N/A'}</span></div>
+        <div class="details-item"><span class="details-label">Last updated:</span> <span class="details-value">${brief.updatedAt ? formatDate(new Date(brief.updatedAt.seconds*1000).toISOString().split('T')[0]) : 'N/A'}</span></div>
+      </div>
+    </div>
+  `);
+  
+  return sections.join('');
+}
+
+// Function to print/export brief
+window.printBrief = function(briefId) {
+  const brief = demoData.briefs.find(b => b.id === briefId);
+  if (!brief) return;
+  
+  // Create a printable version
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <html>
+    <head>
+      <title>Brand Brief - ${brief.companyName || brief.clientName}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 2rem; line-height: 1.6; }
+        h1 { color: #C9A84C; border-bottom: 2px solid #C9A84C; padding-bottom: 0.5rem; }
+        h2 { color: #333; margin-top: 2rem; }
+        .section { margin-bottom: 2rem; }
+        .label { font-weight: bold; color: #666; }
+        .value { margin-left: 1rem; margin-bottom: 0.5rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .footer { margin-top: 3rem; font-size: 0.8rem; color: #999; text-align: center; }
+      </style>
+    </head>
+    <body>
+      <h1>Brand Brief: ${brief.companyName || brief.clientName}</h1>
+      <p>Submitted: ${brief.createdAt ? new Date(brief.createdAt.seconds*1000).toLocaleDateString() : 'N/A'}</p>
+      <p>Status: ${brief.status}</p>
+      
+      <div class="section">
+        <h2>Company Information</h2>
+        <div class="grid">
+          ${brief.companyName ? `<div><span class="label">Company:</span> <span class="value">${brief.companyName}</span></div>` : ''}
+          ${brief.tradingName ? `<div><span class="label">Trading as:</span> <span class="value">${brief.tradingName}</span></div>` : ''}
+          ${brief.industry ? `<div><span class="label">Industry:</span> <span class="value">${brief.industry}</span></div>` : ''}
+          ${brief.location ? `<div><span class="label">Location:</span> <span class="value">${brief.location}</span></div>` : ''}
+          ${brief.phone ? `<div><span class="label">Phone:</span> <span class="value">${brief.phone}</span></div>` : ''}
+          ${brief.website ? `<div><span class="label">Website:</span> <span class="value">${brief.website}</span></div>` : ''}
+        </div>
+      </div>
+      
+      ${brief.instagram || brief.facebook || brief.tiktok ? `
+      <div class="section">
+        <h2>Social Media</h2>
+        <div>
+          ${brief.instagram ? `<div><span class="label">Instagram:</span> <span class="value">${brief.instagram}</span></div>` : ''}
+          ${brief.facebook ? `<div><span class="label">Facebook:</span> <span class="value">${brief.facebook}</span></div>` : ''}
+          ${brief.tiktok ? `<div><span class="label">TikTok:</span> <span class="value">${brief.tiktok}</span></div>` : ''}
+        </div>
+      </div>
+      ` : ''}
+      
+      ${brief.tagline || brief.brandValues || brief.logoLink ? `
+      <div class="section">
+        <h2>Brand Identity</h2>
+        <div>
+          ${brief.tagline ? `<div><span class="label">Tagline:</span> <span class="value">"${brief.tagline}"</span></div>` : ''}
+          ${brief.brandValues ? `<div><span class="label">Brand Values:</span> <span class="value">${brief.brandValues}</span></div>` : ''}
+          ${brief.fonts ? `<div><span class="label">Fonts:</span> <span class="value">${brief.fonts}</span></div>` : ''}
+          ${brief.logoLink ? `<div><span class="label">Logo Files:</span> <span class="value">${brief.logoLink}</span></div>` : ''}
+        </div>
+      </div>
+      ` : ''}
+      
+      ${brief.idealCustomer ? `
+      <div class="section">
+        <h2>Target Audience</h2>
+        <div><span class="label">Ideal Customer:</span> <span class="value">${brief.idealCustomer}</span></div>
+      </div>
+      ` : ''}
+      
+      ${brief.competitors || brief.dontWant ? `
+      <div class="section">
+        <h2>Content Preferences</h2>
+        <div>
+          ${brief.competitors ? `<div><span class="label">Competitors to study:</span> <span class="value">${brief.competitors}</span></div>` : ''}
+          ${brief.dontWant ? `<div><span class="label">Content to avoid:</span> <span class="value">${brief.dontWant}</span></div>` : ''}
+        </div>
+      </div>
+      ` : ''}
+      
+      ${brief.notes ? `
+      <div class="section">
+        <h2>Additional Notes</h2>
+        <div>${brief.notes}</div>
+      </div>
+      ` : ''}
+      
+      <div class="footer">
+        <p>Generated from Epic Cinematic Films Portal - ${new Date().toLocaleString()}</p>
+      </div>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.print();
+};
+
 
 async function loadAdminShoots() {
   const shoots = await getData("shoots");
