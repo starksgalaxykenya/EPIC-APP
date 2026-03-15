@@ -73,8 +73,9 @@
     .rate-number { font-size: 1.5rem; font-family: 'Cormorant Garamond', serif; color: var(--gold); }
     .expanded-detail { margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--border-gold); display: none; }
     .card.expanded .expanded-detail { display: block; }
-    .edit-btn, .delete-btn, .contract-btn { background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.7rem; cursor: pointer; }
+    .edit-btn, .delete-btn, .contract-btn, .subitem-btn { background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.7rem; cursor: pointer; }
     .contract-btn { border-color: var(--gold-dim); color: var(--gold); }
+    .subitem-btn { border-color: var(--green-dim); color: var(--green); margin-left: 0.3rem; }
     .toolbar-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; }
     .modal-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
     .modal-overlay.hidden { display: none; }
@@ -104,10 +105,74 @@
     .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-    @media print { .no-print, .tab-bar, .filter-tabs, .btn, .toolbar-row, .search-input { display: none !important; } }
+    /* subitems styling */
+    .subitems-container { margin-top: 0.8rem; padding-left: 1rem; border-left: 2px solid var(--border-gold); }
+    .subitem-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; padding: 0.5rem 0; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+    .subitem-row:last-child { border-bottom: none; }
+    .subitem-info { flex: 2; }
+    .subitem-name { color: var(--gold); font-weight: 500; display: block; }
+    .subitem-desc { font-size: 0.7rem; color: var(--text-dim); font-style: italic; }
+    .subitem-price { color: var(--green); font-weight: 600; min-width: 80px; text-align: right; }
+    .add-subitem-form { margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.3rem; background: var(--dark4); padding: 0.5rem; border-radius: var(--radius-sm); }
+    .add-subitem-row { display: flex; gap: 0.3rem; }
+    .add-subitem-form input { background: var(--dark3); border: 1px solid var(--border); color: var(--text); padding: 0.3rem 0.5rem; border-radius: 3px; font-size: 0.75rem; }
+    .add-subitem-form input[type="text"] { flex: 2; }
+    .add-subitem-form input[type="number"] { flex: 1; }
+    /* presentation mode */
+    .presentation-mode .no-presentation { display: none !important; }
+    .presentation-mode .edit-btn, 
+    .presentation-mode .delete-btn, 
+    .presentation-mode .contract-btn,
+    .presentation-mode .subitem-btn,
+    .presentation-mode .add-subitem-form,
+    .presentation-mode .toolbar-row,
+    .presentation-mode .filter-tabs,
+    .presentation-mode .search-input,
+    .presentation-mode #resetSearch,
+    .presentation-mode #addItemBtn,
+    .presentation-mode #addCategoryBtn,
+    .presentation-mode #newCatName,
+    .presentation-mode #saveToFirebase,
+    .presentation-mode .tab-bar {
+      display: none !important;
+    }
+    .presentation-mode .card {
+      cursor: default;
+      pointer-events: none;
+    }
+    .presentation-mode .expanded-detail {
+      display: block !important;
+    }
+    .presentation-mode .card::before {
+      display: none;
+    }
+    .presentation-mode .auth-card {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+    .presentation-mode .auth-bg {
+      opacity: 0.8;
+    }
+    .presentation-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10000;
+      background: var(--gold);
+      color: var(--dark);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    @media print { .no-print, .tab-bar, .filter-tabs, .btn, .toolbar-row, .search-input, .presentation-toggle { display: none !important; } }
   </style>
 </head>
 <body>
+  <button class="presentation-toggle" id="presentationToggle">👁️ PRESENTATION VIEW</button>
   <div class="screen active" id="rate-screen">
     <div class="auth-bg"><div class="auth-grain"></div><div class="auth-lines"></div></div>
     <div class="auth-container">
@@ -230,6 +295,8 @@
       const addCategoryBtn = document.getElementById('addCategoryBtn');
       const contractBuilder = document.getElementById('contractBuilder');
       const ledgerBody = document.getElementById('ledgerBody');
+      const presentationToggle = document.getElementById('presentationToggle');
+      const body = document.body;
 
       // tab switching
       const tabs = document.querySelectorAll('.tab');
@@ -237,6 +304,19 @@
 
       let editingId = null;
       let currentClauses = [{ text: 'Standard 50% deposit required.' }]; // default clause
+
+      // Presentation mode toggle
+      let presentationMode = false;
+      presentationToggle.addEventListener('click', () => {
+        presentationMode = !presentationMode;
+        if (presentationMode) {
+          body.classList.add('presentation-mode');
+          presentationToggle.textContent = '✎ EDIT MODE';
+        } else {
+          body.classList.remove('presentation-mode');
+          presentationToggle.textContent = '👁️ PRESENTATION VIEW';
+        }
+      });
 
       // toast
       function showToast(msg, type = 'info') {
@@ -299,9 +379,9 @@
             <div class="card-header">
               <span class="badge">${item.category}</span>
               <div style="display:flex; gap:0.3rem;">
-                <button class="contract-btn" data-id="${item.id}" title="create contract">📄 contract</button>
-                <button class="edit-btn" data-id="${item.id}">✎</button>
-                <button class="delete-btn" data-id="${item.id}">✕</button>
+                <button class="contract-btn no-presentation" data-id="${item.id}" title="create contract">📄 contract</button>
+                <button class="edit-btn no-presentation" data-id="${item.id}">✎</button>
+                <button class="delete-btn no-presentation" data-id="${item.id}">✕</button>
               </div>
             </div>
             <div class="card-title">${item.service}</div>
@@ -313,6 +393,20 @@
             <div class="expanded-detail">
               <div>📋 ${item.description || 'no details'}</div>
               <div>⏱️ ${item.meta || '—'}</div>
+              <!-- Sub-items section with descriptions -->
+              <div class="subitems-container" id="subitems-${item.id}">
+                ${renderSubItems(item)}
+                <div class="add-subitem-form no-presentation">
+                  <div class="add-subitem-row">
+                    <input type="text" id="subitem-name-${item.id}" placeholder="sub-item name">
+                    <input type="number" id="subitem-price-${item.id}" placeholder="price">
+                  </div>
+                  <div class="add-subitem-row">
+                    <input type="text" id="subitem-desc-${item.id}" placeholder="description (optional)" style="flex:3;">
+                    <button class="subitem-btn" onclick="window.addSubItem('${item.id}')">➕ add</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>`;
         });
@@ -321,7 +415,7 @@
         // expand/collapse
         document.querySelectorAll('.card').forEach(card => {
           card.addEventListener('click', (e) => {
-            if (e.target.closest('.edit-btn') || e.target.closest('.delete-btn') || e.target.closest('.contract-btn')) return;
+            if (e.target.closest('.edit-btn') || e.target.closest('.delete-btn') || e.target.closest('.contract-btn') || e.target.closest('.subitem-btn') || e.target.tagName === 'INPUT') return;
             card.classList.toggle('expanded');
           });
         });
@@ -353,6 +447,61 @@
           });
         });
       }
+
+      // Helper function to render sub-items with descriptions
+      function renderSubItems(item) {
+        if (!item.subItems || item.subItems.length === 0) return '';
+        let html = '<div style="margin-bottom:0.5rem;"><small style="color:var(--gold);">SUB-ITEMS:</small></div>';
+        item.subItems.forEach((sub, index) => {
+          html += `
+            <div class="subitem-row">
+              <div class="subitem-info">
+                <span class="subitem-name">${sub.name}</span>
+                ${sub.description ? `<span class="subitem-desc">${sub.description}</span>` : ''}
+              </div>
+              <span class="subitem-price">KES ${sub.price}</span>
+              <button class="delete-btn no-presentation" style="padding:0.1rem 0.3rem;" onclick="window.removeSubItem('${item.id}', ${index})">✕</button>
+            </div>
+          `;
+        });
+        return html;
+      }
+
+      // Global functions for sub-item management
+      window.addSubItem = function(itemId) {
+        const nameInput = document.getElementById(`subitem-name-${itemId}`);
+        const priceInput = document.getElementById(`subitem-price-${itemId}`);
+        const descInput = document.getElementById(`subitem-desc-${itemId}`);
+        const name = nameInput.value.trim();
+        const price = parseFloat(priceInput.value);
+        const description = descInput.value.trim();
+        
+        if (!name || isNaN(price)) {
+          showToast('enter valid name and price', 'error');
+          return;
+        }
+        
+        const item = items.find(i => i.id === itemId);
+        if (!item) return;
+        
+        if (!item.subItems) item.subItems = [];
+        item.subItems.push({ name, price, description });
+        
+        nameInput.value = '';
+        priceInput.value = '';
+        descInput.value = '';
+        render();
+        showToast('sub-item added', 'success');
+      };
+
+      window.removeSubItem = function(itemId, index) {
+        const item = items.find(i => i.id === itemId);
+        if (item && item.subItems) {
+          item.subItems.splice(index, 1);
+          render();
+          showToast('sub-item removed', 'info');
+        }
+      };
 
       // render contract builder (multi-clause)
       function renderContractBuilder(item) {
@@ -512,8 +661,17 @@
         const desc = document.getElementById('itemDesc').value.trim();
         const meta = document.getElementById('itemMeta').value.trim();
         if (!service || isNaN(price)) return showToast('service and price required', 'error');
-        if (editingId) { items = items.map(it => it.id === editingId ? { ...it, service, category, price, description: desc, meta } : it); showToast('updated'); }
-        else { const newId = 'local_' + Date.now() + Math.random().toString(36); items.push({ id: newId, service, category, price, description: desc, meta }); showToast('added'); }
+        if (editingId) { 
+          const existingItem = items.find(it => it.id === editingId);
+          const subItems = existingItem?.subItems || [];
+          items = items.map(it => it.id === editingId ? { ...it, service, category, price, description: desc, meta, subItems } : it); 
+          showToast('updated'); 
+        }
+        else { 
+          const newId = 'local_' + Date.now() + Math.random().toString(36); 
+          items.push({ id: newId, service, category, price, description: desc, meta, subItems: [] }); 
+          showToast('added'); 
+        }
         rebuildCategories(); render(); closeModal();
       }
 
@@ -529,10 +687,20 @@
       async function loadFromFirebase() {
         try {
           const snapshot = await db.collection('rateCards').get();
-          items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), description: doc.data().description || '', meta: doc.data().meta || '' }));
+          items = snapshot.docs.map(doc => ({ 
+            id: doc.id, 
+            ...doc.data(), 
+            description: doc.data().description || '', 
+            meta: doc.data().meta || '',
+            subItems: doc.data().subItems || [] 
+          }));
           rebuildCategories(); render(); showToast('loaded');
         } catch (e) {
-          items = [ { id:'f1', service:'Basic Listing', category:'photography', price:3500, description:'10 images', meta:'24hrs' }, { id:'f2', service:'30s Reel', category:'video', price:6000, description:'instagram', meta:'48hrs' }, { id:'f3', service:'Combo', category:'combo', price:9500, description:'15 photos + reel', meta:'48hrs' } ];
+          items = [ 
+            { id:'f1', service:'Basic Listing', category:'photography', price:3500, description:'10 images', meta:'24hrs', subItems: [] }, 
+            { id:'f2', service:'30s Reel', category:'video', price:6000, description:'instagram', meta:'48hrs', subItems: [] }, 
+            { id:'f3', service:'Combo', category:'combo', price:9500, description:'15 photos + reel', meta:'48hrs', subItems: [] } 
+          ];
           rebuildCategories(); render();
         }
       }
