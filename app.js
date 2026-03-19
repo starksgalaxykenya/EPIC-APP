@@ -365,13 +365,16 @@ function loadAdminPortal(userData) {
   loadAdminClients();
   loadAdminBriefs();
   loadAdminShoots();
-  loadAdminProducts();
+  loadAdminProducts(); // This will now use the updated function
   loadAdminFeedback();
   loadAdminDeliverables();
   loadAdminInvoices();
   setupAdminActions();
+  
+  // ADD THESE TWO LINES HERE:
+  syncRateCardsFromFirebase(); // Load rate cards from Firebase
+  addRateCardRefreshButton();  // Add refresh button to products view
 }
-
 function loadClientPortal(userData) {
   currentPortal = "client";
   showScreen("client-screen");
@@ -844,14 +847,27 @@ function renderShootsList(shoots) {
 }
 
 async function loadAdminProducts() {
-  const products = await getData("products");
+  let products;
+  
+  if (!DEMO_MODE) {
+    // Try to get from Firebase rateCards first
+    products = await syncRateCardsFromFirebase();
+    if (products.length === 0) {
+      // Fallback to products collection
+      products = await getData("products");
+    }
+  } else {
+    products = demoData.products;
+  }
+  
   const el = document.getElementById("admin-products-list");
   
   // Group by category
   const categories = {};
   products.forEach(p => {
-    if (!categories[p.category]) categories[p.category] = [];
-    categories[p.category].push(p);
+    const cat = p.category || (p.addon ? "Add-ons" : "Services");
+    if (!categories[cat]) categories[cat] = [];
+    categories[cat].push(p);
   });
   
   let html = '';
@@ -860,29 +876,33 @@ async function loadAdminProducts() {
     html += items.map(p => `
       <div class="card">
         <div class="card-header">
-          <div class="card-title">${p.name}</div>
+          <div class="card-title">${p.name || p.service}</div>
           <span class="badge ${p.addon ? "badge-purple" : "badge-gold"}">${p.addon ? "Add-on" : "Service"}</span>
         </div>
         <div class="card-body">
-          <div>${p.description}</div>
-          <div style="margin-top:0.5rem; font-size:1.2rem; color:var(--gold)">KES ${p.basePrice.toLocaleString()}</div>
-          <div style="font-size:0.8rem; color:var(--text-dim)">Type: ${p.type}</div>
+          <div>${p.description || ''}</div>
+          <div style="margin-top:0.5rem; font-size:1.2rem; color:var(--gold)">KES ${(p.basePrice || p.price || 0).toLocaleString()}</div>
+          <div style="font-size:0.8rem; color:var(--text-dim)">Type: ${p.type || p.category || 'service'}</div>
+          ${p.meta ? `<div style="font-size:0.8rem; color:var(--text-dim)">${p.meta}</div>` : ''}
         </div>
         <div class="card-footer">
-          <button class="btn-primary btn-sm" onclick="window.editProduct('${p.id}')">Edit</button>
-          <button class="btn-ghost btn-sm" onclick="window.deleteProduct('${p.id}')">Delete</button>
+          ${p.subItems && p.subItems.length > 0 ? 
+            `<span class="badge badge-blue">${p.subItems.length} add-ons</span>` : ''}
+          <button class="btn-ghost btn-sm" onclick="window.open('index contract.html', '_blank')">Manage in Contract Manager</button>
         </div>
       </div>
     `).join('');
   }
   
   if (!products.length) {
-    html = `<div class="empty-state">No products yet. Click "Add Product Category" to create services.</div>`;
+    html = `<div class="empty-state">No products yet. Use the Contract Manager to add services.</div>`;
   }
   
   el.innerHTML = html;
+  
+  // Add refresh button if not exists
+  addRateCardRefreshButton();
 }
-
 async function loadAdminFeedback() {
   const feedbacks = await getData("feedback");
   const el = document.getElementById("admin-feedback-list");
@@ -2505,3 +2525,74 @@ document.addEventListener('click', function(e) {
     window.open('index contract.html', '_blank');
   }
 });
+
+// ═══════════════════════════════════════════════════════════════════
+//  SYNC RATE CARDS FROM CONTRACT MANAGER
+//  This function loads rate cards from Firebase and updates the main app
+// ═══════════════════════════════════════════════════════════════════
+
+async function syncRateCardsFromFirebase() {
+  if (DEMO_MODE) {
+    console.log("Demo mode: Using local rate cards");
+    return [];
+  }
+  
+  try {
+    const rateCardsRef = collection(db, "rateCards");
+    const q = query(rateCardsRef, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    
+    if (!snapshot.empty) {
+      const firebaseProducts = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        // Map fields to match app.js expected format
+        name: doc.data().service || doc.data().name,
+        basePrice: doc.data().price || doc.data().basePrice || 0,
+        addon: doc.data().category === 'addon' || doc.data().type === 'addon' || doc.data().addon || false,
+        type: doc.data().type || (doc.data().category === 'addon' ? 'addon' : 'service')
+      }));
+      
+      // Update demoData.products if in demo mode
+      if (DEMO_MODE) {
+        demoData.products = firebaseProducts;
+      }
+      
+      console.log(`Synced ${firebaseProducts.length} rate cards from Firebase`);
+      
+      // Refresh UI if client or guest portals are active
+      if (currentPortal === 'client') {
+        loadClientEstimator();
+        populateServiceTypes();
+        populateAddons();
+      } else if (currentPortal === 'guest') {
+        loadGuestEstimator();
+        loadGuestServices();
+      }
+      
+      return firebaseProducts;
+    }
+  } catch (e) {
+    console.warn("Error syncing rate cards:", e.message);
+  }
+  return [];
+}
+
+// Add a refresh button to admin products view
+function addRateCardRefreshButton() {
+  const toolbar = document.querySelector('#view-admin-products .view-toolbar');
+  if (toolbar && !document.getElementById('refresh-rate-cards-btn')) {
+    const refreshBtn = document.createElement('button');
+    refreshBtn.id = 'refresh-rate-cards-btn';
+    refreshBtn.className = 'btn-ghost btn-sm';
+    refreshBtn.innerHTML = '🔄 Sync from Contract Manager';
+    refreshBtn.style.marginLeft = '0.5rem';
+    refreshBtn.addEventListener('click', async () => {
+      showToast('Syncing rate cards...', 'info');
+      await syncRateCardsFromFirebase();
+      loadAdminProducts(); // Reload the products view
+      showToast('Rate cards synced successfully!', 'success');
+    });
+    toolbar.appendChild(refreshBtn);
+  }
+}
