@@ -199,8 +199,10 @@
                 <button class="btn-ghost btn-sm" id="addCategoryBtn">+ cat</button>
               </div>
             </div>
-            <button class="btn-ghost btn-sm" id="saveToFirebase">💾 manual save to firebase</button>
-            <button class="btn-ghost btn-sm" id="refreshFromFirebase">🔄 refresh from firebase</button>
+            <div>
+              <button class="btn-ghost btn-sm" id="saveToFirebase">💾 SAVE TO FIREBASE</button>
+              <button class="btn-ghost btn-sm" id="refreshFromFirebase">🔄 REFRESH FROM FIREBASE</button>
+            </div>
           </div>
           <div class="filter-tabs" id="catalogueTabs"></div>
           <div style="display: flex; gap: 0.5rem; margin: 1rem 0;">
@@ -427,6 +429,7 @@
           '#addCategoryBtn',
           '#newCatName',
           '#saveToFirebase',
+          '#refreshFromFirebase',
           '.edit-btn',
           '.delete-btn',
           '.subitem-btn',
@@ -935,7 +938,7 @@
         markChangesPending(); // Mark changes for auto-save
       }
 
-      // Improved save to firebase function with admin check
+      // FIXED: Improved save to firebase function with proper data structure
       async function saveToFirebase(silent = false) {
         if (!isAdmin) {
           showToast('Only admins can modify rate cards', 'error');
@@ -966,6 +969,11 @@
                 price: sub.price || 0,
                 description: sub.description || ''
               })),
+              // Add fields that match app.js expectations
+              name: it.service || '',
+              basePrice: it.price || 0,
+              addon: it.category === 'addon' ? true : false,
+              type: it.category === 'addon' ? 'addon' : 'service',
               createdAt: firebase.firestore.FieldValue.serverTimestamp(),
               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
@@ -990,24 +998,29 @@
         }
       }
 
-      // Improved load from firebase
+      // FIXED: Improved load from firebase
       async function loadFromFirebase(silent = false) {
         try {
           if (!silent) showToast('Loading from Firestore...', 'info');
           const snapshot = await db.collection('rateCards').orderBy('createdAt', 'desc').get();
           
           if (!snapshot.empty) {
-            items = snapshot.docs.map(doc => ({ 
-              id: doc.id, 
-              ...doc.data(), 
-              description: doc.data().description || '', 
-              meta: doc.data().meta || '',
-              subItems: (doc.data().subItems || []).map(sub => ({
-                name: sub.name || '',
-                price: sub.price || 0,
-                description: sub.description || ''
-              }))
-            }));
+            items = snapshot.docs.map(doc => {
+              const data = doc.data();
+              return { 
+                id: doc.id, 
+                service: data.service || data.name || '',
+                category: data.category || '',
+                price: data.price || data.basePrice || 0,
+                description: data.description || '',
+                meta: data.meta || '',
+                subItems: (data.subItems || []).map(sub => ({
+                  name: sub.name || '',
+                  price: sub.price || 0,
+                  description: sub.description || ''
+                }))
+              };
+            });
             if (!silent) showToast('✅ Loaded from Firestore', 'success');
           } else {
             // If Firestore is empty, use default data
